@@ -124,7 +124,7 @@ jobs:
         files: | 
           workspace/out/target/product/${{ github.event.inputs.DEVICE_NAME }}/*.img
           workspace/out/target/product/${{ github.event.inputs.DEVICE_NAME }}/*.zip
-        name: TWRP Recovery for cubot ${{ github.event.inputs.DEVICE_NAME }} with run-id: ${{ github.run_id }}
+        name: TWRP Recovery for cubot ${{ github.event.inputs.DEVICE_NAME }} with run-id:${{ github.run_id }}
         tag_name: ${{ github.run_id }}
         body: |
           TWRP Recovery for Cubot P50
