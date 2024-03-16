@@ -1,10 +1,12 @@
 #<src>                                                  <mnt_point>           <type>              <mnt_flags and options>                      <fs_mgr_flags
-system                                     		/system                ext4                ro wait,logical
-system_ext                                 		/system_ext            ext4                ro wait,logical
-vendor                                     		/vendor                ext4                ro wait,logical
-product                                    		/product               ext4                ro wait,logical
+system      /system      ext4        ro       wait,logical,first_stage_mount
+system_ext      /system_ext      ext4         ro      wait,logical,first_stage_mount
+vendor       /vendor     ext4        ro      wait,logical,first_stage_mount
+product       /product    ext4        ro      wait,logical,first_stage_mount
 
-/dev/block/platform/bootdevice/by-name/md_udc           /metadata	       ext4	          noatime,nosuid,nodev,discard                 wait,check,formattable,first_stage_mount
-/dev/block/platform/bootdevice/by-name/userdata         /data                  ext4                noatime,nosuid,nodev,discard,noflush_merge,reserve_root=134217,resgid=1065,inlinecrypt,tran_gc wait,check,formattable,quota,latemount,resize,reservedsize=128m,checkpoint=fs,fileencryption=aes-256-xts:aes-256-cts:v2+inlinecrypt_optimized,keydirectory=/metadata/vold/metadata_encryption
-/dev/block/platform/bootdevice/by-name/para             /misc                  emmc                defaults                                     defaults
+/dev/block/platform/bootdevice/by-name/md_udc /metadata ext4 noatime,nosuid,nodev,discard wait,check,formattable,first_stage_mount
+
+/dev//dev/block/platform/bootdevice/by-name/userdata /data ext4 noatime,nosuid,nodev,nodiscard,nodelalloc,nobarrier,data=writeback,noauto_da_alloc,errors=panic,inlinecrypt latemount,wait,check,quota,reservedsize=128M,formattable,resize,checkpoint=block,fileencryption=aes-256-xts:aes-256-cts:v2,keydirectory=/metadata/vold/metadata_encryption
+
+/dev/block/platform/bootdevice/by-name/para /misc emmc defaults defaults
 
