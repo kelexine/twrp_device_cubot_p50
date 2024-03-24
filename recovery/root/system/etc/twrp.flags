@@ -1,13 +1,11 @@
 # Main Image Partitions
 /system_image  emmc		/dev/block/mapper/system			flags=display="System (Image)";backup=1;flashimg=1;
 /vendor_image  emmc		/dev/block/mapper/vendor			flags=display="Vendor (Image)";backup=1;flashimg=1;
-/product_image emmc		/dev/block/mapper/product          flags=display="Product (Image)";backup=1;flashimg=1;
-/systemext_image  emmc		/dev/block/mapper/system_ext			flags=display="SystemExt (Image)";backup=1;flashimg=1;
+/product_image emmc		/dev/block/mapper/product     flags=display="Product (Image)";backup=1;flashimg=1;
 
 # Other Partitions
 /system_root   ext4		/dev/block/mapper/system                    flags=display="System";backup=0;wipeingui;
 /vendor        ext4		/dev/block/mapper/vendor                    flags=display="Vendor";backup=0;wipeingui;
-/system_ext    ext4		/dev/block/mapper/system_ext                    flags=display="System Ext";backup=0;wipeingui;
 /product       ext4		/dev/block/mapper/product                   flags=display="Product";backup=0;wipeingui;
 
 
