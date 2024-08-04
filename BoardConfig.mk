@@ -9,6 +9,7 @@ DEVICE_PATH := device/cubot/P50
 
 # For building with minimal manifest
 ALLOW_MISSING_DEPENDENCIES := true
+TARGET_USES_64_BIT_BINDER := true
 
 # Architecture
 TARGET_ARCH := arm64
