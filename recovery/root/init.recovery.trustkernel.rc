@@ -53,7 +53,7 @@ on property:vendor.trustkernel.log.state=ready
 on property:vendor.trustkernel.ready=true
        start tee_check_keybox
 
-service teed /vendor/bin/teed \
+service teed /system/bin/teed \
     --datapath /data/vendor/t6/fs \
     --sptapath /data/vendor/t6/app \
     --systapath /vendor/app/t6 \
@@ -68,7 +68,7 @@ service teed /vendor/bin/teed \
 	group root
 	class core
 
-service tee_check_keybox /vendor/bin/tee_check_keybox
+service tee_check_keybox /system/bin/tee_check_keybox
        user root
        group root
        class main

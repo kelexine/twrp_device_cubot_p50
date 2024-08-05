@@ -63,13 +63,13 @@ on init
     setprop sys.usb.configfs 1
     setprop sys.usb.ffs.aio_compat 1
    
-service keymaster-4-0 /vendor/bin/hw/android.hardware.keymaster@4.0-service.trustkernel
+service keymaster-4-0 /system/bin/hw/android.hardware.keymaster@4.0-service.trustkernel
     user root
     group root drmrpc
     disabled
     seclabel u:r:recovery:s0
 
-service gatekeeper-1-0 /vendor/bin/hw/android.hardware.gatekeeper@1.0-service
+service gatekeeper-1-0 /system/bin/hw/android.hardware.gatekeeper@1.0-service
     user root
     group root
     disabled
