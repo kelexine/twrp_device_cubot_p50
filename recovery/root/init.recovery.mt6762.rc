@@ -1,6 +1,7 @@
 import /init.recovery.trustkernel.rc
 
 on init
+    export LD_LIBRARY_PATH /system/lib64:/vendor/lib64:/vendor/lib64/hw:/system/lib64/hw
     setprop sys.usb.configfs 1
     setprop sys.usb.ffs.aio_compat 1
 
@@ -77,8 +78,8 @@ service gatekeeper-1-0 /system/bin/hw/android.hardware.gatekeeper@1.0-service
 
 on property:hwservicemanager.ready=true
     start teed
-    start keymaster-4-0-trustkernel
-    start gatekeeper-1-0-service
+    start keymaster-4-0
+    start gatekeeper-1-0
 
 on property:ro.crypto.state=unsupported
     stop teed
