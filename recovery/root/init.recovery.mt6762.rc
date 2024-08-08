@@ -1,7 +1,6 @@
 import /init.recovery.trustkernel.rc
 
 on init
-    export LD_LIBRARY_PATH /system/lib64:/vendor/lib64:/vendor/lib64/hw:/system/lib64/hw
     setprop sys.usb.configfs 1
     setprop sys.usb.ffs.aio_compat 1
 
@@ -20,6 +19,27 @@ on post-fs
 
     exec u:r:update_engine:s0 root root -- /system/bin/mtk_plpath_utils
 
+on init
+    start hwservicemanager
+
+service hwservicemanager /system/bin/hwservicemanager
+    user root
+    group root
+    onrestart setprop hwservicemanager.ready false
+    disabled
+    seclabel u:r:recovery:s0
+
+on init
+    start vndservicemanager
+
+service vndservicemanager /system/bin/vndservicemanager /dev/vndbinder
+    disabled
+    user root
+    group root readproc
+    writepid /dev/cpuset/system-background/tasks
+    shutdown critical
+    seclabel u:r:recovery:s0
+    
 service keystore /system/bin/keystore /tmp/misc/keystore
     user root
     group root drmrpc readproc
@@ -35,12 +55,10 @@ service keystore_auth /system/bin/keystore_auth
     
 on fs
     install_keyring
+    setprop crypto.ready 1
+    start hwservicemanager
+    start servicemanager
 
-on property:vendor.sys.listener.registered=true
-    start keymaster-4-0
-    start gatekeeper-1-0
-    start teed
-    
 on init
     setprop sys.usb.configfs 1
     setprop sys.usb.ffs.aio_compat 1
@@ -58,22 +76,28 @@ service gatekeeper-1-0 /system/bin/hw/android.hardware.gatekeeper@1.0-service
     seclabel u:r:recovery:s0
 
 on property:hwservicemanager.ready=true
-    start keymaster-4-0
-    start gatekeeper-1-0
     start teed
+    start keymaster-4-0-trustkernel
+    start gatekeeper-1-0-service
 
 on property:ro.crypto.state=unsupported
     stop teed
+    stop servicemanager
+    stop hwservicemanager
     stop keymaster-4-0
     stop gatekeeper-1-0
 
 on property:ro.crypto.state=unencrypted
     stop teed
+    stop servicemanager
+    stop hwservicemanager
     stop keymaster-4-0
     stop gatekeeper-1-0
 
 on property:twrp.decrypt.done=true
     stop teed
+    stop servicemanager
+    stop hwservicemanager
     stop keymaster-4-0
     stop gatekeeper-1-0
     
