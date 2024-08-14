@@ -41,16 +41,16 @@ service vndservicemanager /system/bin/vndservicemanager /dev/vndbinder
     shutdown critical
     seclabel u:r:recovery:s0
     
-service keystore /system/bin/keystore /tmp/misc/keystore
-    user root
-    group root drmrpc readproc
-    disabled
-    seclabel u:r:recovery:s0
-    
 service keystore_auth /system/bin/keystore_auth
     oneshot
-    user root
+    user system
     group root
+    disabled
+    seclabel u:r:recovery:s0
+
+service keystore /system/bin/keystore /tmp/misc/keystore
+    user root
+    group root drmrpc readproc log
     disabled
     seclabel u:r:recovery:s0
     
@@ -78,11 +78,13 @@ interface android.hardware.gatekeeper@1.0::IGatekeeper default
     seclabel u:r:recovery:s0
 
 on property:hwservicemanager.ready=true
+    start tee_check_keybox
     start teed
     start keymaster-4-0
     start gatekeeper-1-0
 
 on property:ro.crypto.state=unsupported
+    stop tee_check_keybox
     stop teed
     stop servicemanager
     stop hwservicemanager
@@ -90,6 +92,7 @@ on property:ro.crypto.state=unsupported
     stop gatekeeper-1-0
 
 on property:ro.crypto.state=unencrypted
+    stop tee_check_keybox
     stop teed
     stop servicemanager
     stop hwservicemanager
@@ -97,9 +100,60 @@ on property:ro.crypto.state=unencrypted
     stop gatekeeper-1-0
 
 on property:twrp.decrypt.done=true
+    stop tee_check_keybox
     stop teed
     stop servicemanager
     stop hwservicemanager
     stop keymaster-4-0
     stop gatekeeper-1-0
     
+on post-fs
+	write /proc/bootprof "tkcore: prepare system ta path"
+
+	restorecon /mnt/vendor/persist
+	mkdir /mnt/vendor/persist/t6
+	chown system system /mnt/vendor/persist/t6
+	restorecon /mnt/vendor/persist/t6
+
+	restorecon /mnt/vendor/protect_f
+	mkdir /mnt/vendor/protect_f/tee
+	chown system system /mnt/vendor/protect_f/tee
+	restorecon /mnt/vendor/protect_f/tee
+
+on property:vendor.trustkernel.fs.state=prepare
+	write /proc/bootprof "tkcore: prepare basic"
+	mkdir /data/vendor/t6
+	chown system system /data/vendor/t6
+	restorecon /data/vendor/t6
+
+	write /proc/bootprof "tkcore: prepare sfs"
+	mkdir /data/vendor/t6/fs
+	chown system system /data/vendor/t6/fs
+	restorecon /data/vendor/t6/fs
+
+	write /proc/bootprof "tkcore: prepare service provider ta path"
+	mkdir /data/vendor/t6/app
+	chown system system /data/vendor/t6/app
+	restorecon /data/vendor/t6/app
+	setprop vendor.trustkernel.fs.state ready
+
+# For non-encrypted case
+on property:ro.crypto.state=unencrypted
+	setprop vendor.trustkernel.fs.mode 1
+	setprop vendor.trustkernel.fs.state prepare
+
+# For FDE/encrypted successfully
+on property:vold.decrypt=trigger_restart_framework
+	setprop vendor.trustkernel.fs.mode 2
+	setprop vendor.trustkernel.fs.state prepare
+
+# For FBE/encrypted successfully
+on property:ro.crypto.type=file && property:ro.crypto.state=encrypted
+	setprop vendor.trustkernel.fs.mode 3
+	setprop vendor.trustkernel.fs.state prepare
+
+on property:vendor.trustkernel.log.state=ready
+	write /proc/bootprof "tkcore: prepare log file"
+	restorecon /data/vendor/t6/tkcore.log
+	setprop vendor.trustkernel.log.state enable
+	
