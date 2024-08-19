@@ -12,6 +12,8 @@ on fs && property:ro.debuggable=0
     start adbd
 
 on post-fs
+    # Fix OF installer
+    symlink /dev/block/platform/bootdevice /dev/block/bootdevice
     # Support A/B feature for emmc boot region
     symlink /dev/block/sda /dev/block/mmcblk0boot0
     symlink /dev/block/sdb /dev/block/mmcblk0boot1
