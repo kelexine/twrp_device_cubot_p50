@@ -20,8 +20,6 @@ on post-fs
 
     exec u:r:update_engine:s0 root root -- /system/bin/mtk_plpath_utils
 
-on init
-    start hwservicemanager
 
 service hwservicemanager /system/bin/hwservicemanager
     user root
@@ -56,14 +54,7 @@ service keystore /system/bin/keystore /tmp/misc/keystore
     
 on fs
     install_keyring
-    setprop crypto.ready 1
-    start hwservicemanager
-    start servicemanager
 
-on init
-    setprop sys.usb.configfs 1
-    setprop sys.usb.ffs.aio_compat 1
-   
 service keymaster-4-0 /system/bin/hw/android.hardware.keymaster@4.0-service.trustkernel
     user root
     group root drmrpc
@@ -106,6 +97,12 @@ on property:twrp.decrypt.done=true
     stop hwservicemanager
     stop keymaster-4-0
     stop gatekeeper-1-0
+
+
+on init
+    #create mountpoint for /mnt/vendor/persist partition
+    mkdir /mnt/vendor/persist 0771 root root
+   
     
 on post-fs
 	write /proc/bootprof "tkcore: prepare system ta path"
