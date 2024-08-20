@@ -104,6 +104,9 @@ on property:twrp.decrypt.done=true
 on init
     #create mountpoint for /mnt/vendor/persist partition
     mkdir /mnt/vendor/persist 0771 root root
+    
+    #create mountpoint for /mnt/vendor/persist partition
+    mkdir /tmp/misc/keystore 0771 root root
    
     
 on post-fs
