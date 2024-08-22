@@ -1,5 +1,11 @@
+on init
+    mkdir /tmp/misc/keystore 0771 root root
+    restorecon /tmp/misc/keystore
+    mkdir /mnt/vendor/
+    
 on post-fs
 	write /proc/bootprof "tkcore: prepare system ta path"
+	mkdir /mnt/vendor/persist
 
 	restorecon /mnt/vendor/persist
 	mkdir /mnt/vendor/persist/t6
