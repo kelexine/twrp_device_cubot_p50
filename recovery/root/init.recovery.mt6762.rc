@@ -71,7 +71,7 @@ interface android.hardware.gatekeeper@1.0::IGatekeeper default
     disabled
     seclabel u:r:recovery:s0
     
-service attestation-1-1 /vendor/bin/hw/vendor.mediatek.hardware.keymaster_attestation@1.1-service
+service attestation-1-1 /system/bin/hw/vendor.mediatek.hardware.keymaster_attestation@1.1-service
     interface vendor.mediatek.hardware.keymaster_attestation@1.0::IKeymasterDevice default
     interface vendor.mediatek.hardware.keymaster_attestation@1.1::IKeymasterDevice default
     class hal
