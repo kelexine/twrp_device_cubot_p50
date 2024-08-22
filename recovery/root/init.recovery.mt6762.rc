@@ -4,6 +4,7 @@ on init
     export LD_LIBRARY_PATH /system/lib64:/vendor/lib64:/vendor/lib64/hw:/system/lib64/hw
     setprop sys.usb.configfs 1
     setprop sys.usb.ffs.aio_compat 1
+    setprop crypto.ready 1
 
 on fs && property:ro.debuggable=0
     # distinguish USB shoulde connect or not, i.e. CDP vs SDP
@@ -69,22 +70,24 @@ interface android.hardware.gatekeeper@1.0::IGatekeeper default
     group root
     disabled
     seclabel u:r:recovery:s0
-
-on property:hwservicemanager.ready=true
-    write /proc/bootprof "tkcore: start decryption services"
-    start keymaster-4-0
-    start gatekeeper-1-0
+    
+service attestation-1-1 /vendor/bin/hw/vendor.mediatek.hardware.keymaster_attestation@1.1-service
+    interface vendor.mediatek.hardware.keymaster_attestation@1.0::IKeymasterDevice default
+    interface vendor.mediatek.hardware.keymaster_attestation@1.1::IKeymasterDevice default
+    class hal
+    user root
+    group root
+    disabled
+    seclabel u:r:recovery:s0
 
 on property:ro.crypto.state=unsupported
-    stop tee_check_keybox
     stop teed
     stop servicemanager
     stop hwservicemanager
     stop keymaster-4-0
     stop gatekeeper-1-0
 
-on property:ro.crypto.state=unencrypted
-    stop tee_check_keybox
+on property:ro.crypto.state=unencryptedox
     stop teed
     stop servicemanager
     stop hwservicemanager
@@ -92,7 +95,6 @@ on property:ro.crypto.state=unencrypted
     stop gatekeeper-1-0
 
 on property:twrp.decrypt.done=true
-    stop tee_check_keybox
     stop teed
     stop servicemanager
     stop hwservicemanager
@@ -106,4 +108,9 @@ on init
     
     #create mountpoint for /mnt/vendor/persist partition
     mkdir /tmp/misc/keystore 0771 root root
-   
+
+on property:vendor.sys.listeners.registered=true
+    start keymaster-4-0
+    start gatekeeper-1-0
+    start servicemanager
+    start attestation-1-1
