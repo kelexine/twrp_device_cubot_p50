@@ -1,3 +1,4 @@
+# Twrp Recovery Tree for Cubot P50 (Marlon)
 
 |Basic               |Spec Sheet|
 |--                  |--                                                            |
@@ -7,6 +8,9 @@
 |Memory              |6GB RAM                                                     |
 |Android Version     |11 (AOSP)                                               |
 |Storage             |128GB                                                      |
+
+
+![Cubot P50 (Marlon)](https://fdn2.gsmarena.com/vv/pics/cubot/cubot-p50-1.jpg)
 
 Blocking checks
 - [X] Correct screen/recovery size
@@ -40,6 +44,3 @@ Minor checks
 - [X] vibrate
 - [X] screenshot
 - [X] partition SD card
-
-# Twrp Recovery Tree for Cubot P50 (Marlon)
-![Cubot P50 (Marlon)](https://fdn2.gsmarena.com/vv/pics/cubot/cubot-p50-1.jpg)
