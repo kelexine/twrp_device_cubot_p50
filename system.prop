@@ -10,3 +10,4 @@ ro.crypto.metadata.enabled=true
 ro.crypto.support_metadata_encrypt=true
 ro.crypto.uses_fs_ioc_add_encryption_key=true
 ro.sys.usb.mtp.whql.enable=0
+persist.sys.usb.config=mtp,adb
