@@ -1,6 +1,6 @@
 # Main Image Partitions
 /system_image  emmc		/dev/block/mapper/system			flags=display="System (Image)";backup=1;flashimg=1;
-/vendor_image  emmc		/dev/block/mapper/vendor			flags=display="Vendor (Image)";backup=1;flashimg=1;
+/vendor_image  emmc		/dev/block/mapper/vendor			flags=display="Vendor (Image)";backup=1;flashimg=1;mounttodecrypt;
 /product_image emmc		/dev/block/mapper/product     flags=display="Product (Image)";backup=1;flashimg=1;
 
 # Other Partitions
@@ -16,7 +16,7 @@
 /protect_s          ext4      /dev/block/platform/bootdevice/by-name/protect2                       flags=display="Protect_s";backup=1;
 /nvdata             ext4      /dev/block/platform/bootdevice/by-name/nvdata                         flags=display="Nvdata";backup=1;
 /nvcfg              ext4      /dev/block/platform/bootdevice/by-name/nvcfg                          flags=display="Nvcfg";backup=1;
-/mnt/vendor/persist            ext4      /dev/block/platform/bootdevice/by-name/persist                        flags=display="Persist";backup=1;flashimg=1;
+/persist            ext4      /dev/block/platform/bootdevice/by-name/persist                        flags=display="Persist";backup=1;flashimg=1;
 /persistent         emmc      /dev/block/platform/bootdevice/by-name/frp                            flags=display="Persistent";backup=1;flashimg=1;
 /nvram              emmc      /dev/block/platform/bootdevice/by-name/nvram                          flags=display="Nvram";backup=1;flashimg=1;
 /proinfo            emmc      /dev/block/platform/bootdevice/by-name/proinfo
