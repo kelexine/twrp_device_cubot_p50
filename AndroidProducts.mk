@@ -6,9 +6,9 @@
 #
 
 PRODUCT_MAKEFILES := \
-    $(LOCAL_DIR)/twrp_P50.mk
+    $(LOCAL_DIR)/twrp_marlon.mk
 
 COMMON_LUNCH_CHOICES := \
-    twrp_P50-user \
-    twrp_P50-userdebug \
-    twrp_P50-eng
+    twrp_marlon-user \
+    twrp_marlon-userdebug \
+    twrp_marlon-eng

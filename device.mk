@@ -5,7 +5,7 @@
 # SPDX-License-Identifier: Apache-2.0
 #
 
-LOCAL_PATH := device/cubot/P50
+LOCAL_PATH := device/cubot/marlon
 
 # Dynamic Partitions
 PRODUCT_USE_DYNAMIC_PARTITIONS := true
@@ -37,6 +37,9 @@ PRODUCT_PACKAGES += \
     update_engine \
     update_verifier \
     update_engine_sideload
+    
+PRODUCT_PACKAGES += \
+    keystore2
 
 # OEM otacerts
 PRODUCT_EXTRA_RECOVERY_KEYS += \
