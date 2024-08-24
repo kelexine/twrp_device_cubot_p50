@@ -160,7 +160,6 @@ TW_HAS_MTP := true
 TW_FRAMERATE := 60
 TW_PREPARE_DATA_MEDIA_EARLY := true
 TW_MTP_DEVICE := "Cubot Marlon"
-TW_INCLUDE_FB2PNG := true
 
 # Debug
 TWRP_INCLUDE_LOGCAT := true
