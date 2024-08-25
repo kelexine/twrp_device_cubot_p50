@@ -1,3 +1,6 @@
+# Twrp Recovery Tree for Cubot P50 (Marlon)
+![Cubot P50 (Marlon)](https://fdn2.gsmarena.com/vv/pics/cubot/cubot-p50-1.jpg)
+
 
 |Basic               |Spec Sheet|
 |--                  |--                                                            |
@@ -40,6 +43,3 @@ Minor checks
 - [X] vibrate
 - [X] screenshot
 - [X] partition SD card
-
-# Twrp Recovery Tree for Cubot P50 (Marlon)
-![Cubot P50 (Marlon)](https://fdn2.gsmarena.com/vv/pics/cubot/cubot-p50-1.jpg)
