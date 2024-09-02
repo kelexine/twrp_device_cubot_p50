@@ -1,8 +1,8 @@
 on fs
-    mkdir /mnt/vendor/persist 0770 root root
-    mkdir /tmp/misc 0770 root root 
-    mkfir /tmp/misc/keystore 0770 root root
-    mkdir /mnt/vendor 0770 root root
+        mkdir /mnt/vendor 0770 root root
+        mkdir /mnt/vendor/persist 0770 root root
+        mkdir /tmp/misc 0770 root root 
+        mkfir /tmp/misc/keystore 0770 root root
 	mkdir /mnt/vendor/protect_f 0770 root root
 	mkdir /mnt/vendor/protect_s 0770 root root
 	mkdir /mnt/vendor/nvdata 0770 root root
