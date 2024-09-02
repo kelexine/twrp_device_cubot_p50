@@ -20,9 +20,13 @@ PRODUCT_PACKAGES += \
 # Boot Control HAL
 PRODUCT_PACKAGES += \
     android.hardware.boot@1.1-mtkimpl.recovery \
-    android.hardware.boot@1.1-mtkimpl
-    
-    
+    android.hardware.boot@1.1-mtkimpl \
+    bootctl
+
+PRODUCT_PACKAGES_DEBUG += \
+    bootctrl.mt6762 \
+    bootctrl.mt6765
+
 # Fastbootd
 PRODUCT_PACKAGES += \
     android.hardware.fastboot@1.0-impl-mock \
