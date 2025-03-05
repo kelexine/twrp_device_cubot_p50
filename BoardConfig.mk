@@ -163,5 +163,5 @@ TW_MTP_DEVICE := "Cubot Marlon"
 #TW_INCLUDE_FB2PNG := true
 
 # Debug
-TWRP_INCLUDE_LOGCAT := true
-TARGET_USES_LOGD := true
+#TWRP_INCLUDE_LOGCAT := true
+#TARGET_USES_LOGD := true
