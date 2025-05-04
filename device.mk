@@ -42,8 +42,6 @@ PRODUCT_PACKAGES += \
     update_verifier \
     update_engine_sideload
     
-PRODUCT_PACKAGES += \
-    keystore2
 
 # OEM otacerts
 PRODUCT_EXTRA_RECOVERY_KEYS += \
