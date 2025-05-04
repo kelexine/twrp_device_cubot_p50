@@ -132,7 +132,7 @@ PLATFORM_VERSION := 18.1.0
 
 ## TWRP-Specific configuration
 TW_THEME := portrait_hdpi
-TW_DEVICE_VERSION := kelexine
+TW_DEVICE_VERSION := kelexine-xda
 RECOVERY_SDCARD_ON_DATA := true
 TARGET_USES_MKE2FS := true
 TARGET_USE_CUSTOM_LUN_FILE_PATH := /config/usb_gadget/g1/functions/mass_storage.usb0/lun.%d/file
@@ -144,6 +144,8 @@ TW_H_OFFSET := -60
 TW_EXCLUDE_DEFAULT_USB_INIT := true
 TW_EXCLUDE_APEX := true
 TW_INCLUDE_TWRPAPP := false
+TW_USE_TOOLBOX := true
+TW_NO_USB_STORAGE := true
 TW_EXTRA_LANGUAGES := false
 TW_INCLUDE_NTFS_3G := false
 TW_NO_SCREEN_BLANK := true
@@ -153,5 +155,5 @@ TW_PREPARE_DATA_MEDIA_EARLY := true
 TW_MTP_DEVICE := "Cubot Marlon"
 
 # Debug
-#TWRP_INCLUDE_LOGCAT := true
-#TARGET_USES_LOGD := true
+TWRP_INCLUDE_LOGCAT := true
+TARGET_USES_LOGD := true
