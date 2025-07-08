@@ -92,18 +92,15 @@ TW_USE_FSCRYPT_POLICY := 2
 BOARD_USES_METADATA_PARTITION := true
 BOARD_ROOT_EXTRA_FOLDERS += metadata
 
-# Recovery modules
+# Recovery modules - minimized
 TARGET_RECOVERY_DEVICE_MODULES += \
-    libkeymaster4 \
-    libpuresoftkeymasterdevice
+    libkeymaster4
 
 RECOVERY_LIBRARY_SOURCE_FILES += \
-    $(TARGET_OUT_SHARED_LIBRARIES)/libkeymaster4.so \
-    $(TARGET_OUT_SHARED_LIBRARIES)/libpuresoftkeymasterdevice.so
+    $(TARGET_OUT_SHARED_LIBRARIES)/libkeymaster4.so
 
 # Properties
 TARGET_SYSTEM_PROP += $(DEVICE_PATH)/system.prop
-
 
 # Verified Boot
 BOARD_AVB_ENABLE := true
@@ -130,7 +127,11 @@ PLATFORM_SECURITY_PATCH := 2099-12-31
 VENDOR_SECURITY_PATCH := 2022-08-05
 PLATFORM_VERSION := 18.1.0
 
-## TWRP-Specific configuration
+# Compression optimization
+#BOARD_RAMDISK_USE_LZ4 := true
+#BOARD_RAMDISK_USE_XZ := false
+
+## TWRP-Specific configuration - SIZE OPTIMIZED
 TW_THEME := portrait_hdpi
 TW_DEVICE_VERSION := kelexine-xda
 RECOVERY_SDCARD_ON_DATA := true
@@ -141,28 +142,46 @@ TW_DEFAULT_BRIGHTNESS := 125
 TW_MAX_BRIGHTNESS := 255
 TW_Y_OFFSET := 65
 TW_H_OFFSET := -60
-TW_EXCLUDE_APEX := true
+
+# Size optimization flags
+TW_EXCLUDE_SUPERSU := true
 TW_EXCLUDE_TWRPAPP := true
-TW_USE_TOOLBOX := true
+TW_EXCLUDE_APEX := true
 TW_EXCLUDE_LPDUMP := true
 TW_EXCLUDE_LPTOOLS := true
-TW_INCLUDE_REPACKTOOLS := false
-TW_INCLUDE_RESETPROP := false
-TW_INCLUDE_LIBRESETPROP := false
-TW_NO_USB_STORAGE := true
-TW_EXTRA_LANGUAGES := false
-TW_EXCLUDE_NTFS_3G := false
 TW_EXCLUDE_NANO := true
 TW_EXCLUDE_BASH := true
-TW_OEM_BUILD := true
-TW_NO_EXFAT := true
+TW_EXCLUDE_NTFS_3G := true
 TW_EXCLUDE_ENCRYPTED_BACKUPS := true
 TW_EXCLUDE_TZDATA := true
+TW_NO_EXFAT := true
 TW_NO_EXFAT_FUSE := true
+TW_EXCLUDE_PYTHON := true
+TW_EXCLUDE_FIRMWARE_OVERRIDE := true
+TW_USE_TOOLBOX := true
+TW_NO_USB_STORAGE := true
+TW_EXTRA_LANGUAGES := false
+TW_DEFAULT_LANGUAGE := en
+TW_OEM_BUILD := true
 TW_SCREEN_BLANK_ON_BOOT := true
 TW_HAS_MTP := true
 TW_PREPARE_DATA_MEDIA_EARLY := true
 TW_MTP_DEVICE := "Cubot Marlon"
+
+# Disable debugging and extra features
+TWRP_INCLUDE_LOGCAT := false
+TARGET_USES_LOGD := false
+TW_NO_SCREEN_TIMEOUT := true
+TW_NO_BATT_PERCENT := true
+TW_NO_CPU_TEMP := true
+TW_DISABLE_TTF := true
+TW_NO_FASTBOOT_BOOT := true
+TW_HAS_DOWNLOAD_MODE := false
+
+# Remove repack tools
+TW_INCLUDE_REPACKTOOLS := false
+TW_INCLUDE_RESETPROP := false
+TW_INCLUDE_LIBRESETPROP := false
 
 # Debug
 TWRP_INCLUDE_LOGCAT := false
