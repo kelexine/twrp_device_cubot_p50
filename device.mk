@@ -19,9 +19,10 @@ PRODUCT_PACKAGES += \
 PRODUCT_PACKAGES += \
     fastbootd
 
-# Minimal recovery packages only
+# Recovery packages
 PRODUCT_PACKAGES += \
-    update_engine_sideload
+    update_engine_sideload \
+    libSoftGatekeeper
 
 # OEM otacerts
 PRODUCT_EXTRA_RECOVERY_KEYS += \
