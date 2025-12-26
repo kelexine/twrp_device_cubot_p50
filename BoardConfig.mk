@@ -9,7 +9,8 @@ DEVICE_PATH := device/cubot/marlon
 
 # For building with minimal manifest
 ALLOW_MISSING_DEPENDENCIES := true
-TARGET_USES_64_BIT_BINDER := true
+BUILD_BROKEN_DUP_RULES := true
+BUILD_BROKEN_ELF_PREBUILT_PRODUCT_COPY_FILES := true
 
 # Architecture
 TARGET_ARCH := arm64
