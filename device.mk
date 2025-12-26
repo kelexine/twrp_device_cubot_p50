@@ -24,6 +24,10 @@ PRODUCT_PACKAGES += \
     update_engine_sideload \
     libSoftGatekeeper
 
+# Crypto dependencies
+PRODUCT_PACKAGES += \
+    libopenaes
+
 # OEM otacerts
 PRODUCT_EXTRA_RECOVERY_KEYS += \
     $(LOCAL_PATH)/security/cubot
