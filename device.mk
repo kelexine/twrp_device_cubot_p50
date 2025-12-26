@@ -17,6 +17,7 @@ PRODUCT_PACKAGES += \
 
 # Fastbootd
 PRODUCT_PACKAGES += \
+    android.hardware.fastboot@1.0-impl-mock \
     fastbootd
 
 # Recovery packages
@@ -24,9 +25,17 @@ PRODUCT_PACKAGES += \
     update_engine_sideload \
     libSoftGatekeeper
 
-# Crypto dependencies
+# VNDK
+PRODUCT_TARGET_VNDK_VERSION := 30
+
+# API
+PRODUCT_SHIPPING_API_LEVEL := 30
+
+# Health HAL
 PRODUCT_PACKAGES += \
-    libopenaes
+    android.hardware.health@2.1-impl \
+    android.hardware.health@2.1-service \
+    libhealthd.$(PRODUCT_PLATFORM)
 
 # OEM otacerts
 PRODUCT_EXTRA_RECOVERY_KEYS += \
