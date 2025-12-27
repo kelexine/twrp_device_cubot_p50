@@ -1,4 +1,5 @@
 on fs
+    # Create base vendor directories
     mkdir /mnt/vendor 0755 system system
     mkdir /mnt/vendor/apd 0771 system system
     mkdir /mnt/vendor/protect_f 0770 system system
@@ -6,23 +7,62 @@ on fs
     mkdir /mnt/vendor/persist 0755 system system
     mkdir /mnt/vendor/nvdata 0771 system system
     mkdir /mnt/vendor/nvcfg 0771 system system
-    mount ext4 /dev/block/by-name/apd /mnt/vendor/apd rw wait
-    mount ext4 /dev/block/by-name/protect1 /mnt/vendor/protect_f rw wait
-    mount ext4 /dev/block/by-name/protect2 /mnt/vendor/protect_s rw wait
-    mount ext4 /dev/block/by-name/persist /mnt/vendor/persist rw wait
-    mount ext4 /dev/block/by-name/nvdata /mnt/vendor/nvdata rw wait
-    mount ext4 /dev/block/by-name/nvcfg /mnt/vendor/nvcfg rw wait
+
+    # Mount vendor partitions (continue on failure)
+    mount ext4 /dev/block/by-name/apd /mnt/vendor/apd rw
+    mount ext4 /dev/block/by-name/protect1 /mnt/vendor/protect_f rw
+    mount ext4 /dev/block/by-name/protect2 /mnt/vendor/protect_s rw
+    mount ext4 /dev/block/by-name/persist /mnt/vendor/persist rw
+    mount ext4 /dev/block/by-name/nvdata /mnt/vendor/nvdata rw
+    mount ext4 /dev/block/by-name/nvcfg /mnt/vendor/nvcfg rw
+
+    # Create TA directories in PRIMARY location (where TKCore looks first)
+    mkdir /system 0755 root root
+    mkdir /system/app 0755 root root
+    mkdir /system/app/t6 0755 root root
+
+    # Create TA directories in SECONDARY location
+    mkdir /data 0771 system system
+    mkdir /data/tee 0755 system system
+    mkdir /data/tee/t6 0755 system system
+
+    # Create legacy TA directories for compatibility
+    mkdir /mnt/vendor/persist/t6 0755 system system
     mkdir /mnt/vendor/persist/t6_twrp 0755 system system
+    mkdir /mnt/vendor/protect_f/tee 0755 system system
     mkdir /mnt/vendor/protect_f/tee_twrp 0755 system system
-    exec u:r:recovery:s0 system -- /vendor/bin/trustkernel.twrp.sh
+    mkdir /protect_f 0755 system system
+    mkdir /protect_f/tee 0755 system system
+
+    # Copy TAs from recovery ramdisk to PRIMARY location (/system/app/t6)
+    # This is where TKCore client library searches FIRST
+    exec u:r:recovery:s0 root root -- /system/bin/cp -rfp /vendor/app/t6/02662e8e-e126-11e5-b86d9a79f06e9478.ta /system/app/t6/
+    exec u:r:recovery:s0 root root -- /system/bin/cp -rfp /vendor/app/t6/9ef77781-7bd5-4e39-965f20f6f211f46b.ta /system/app/t6/
+    exec u:r:recovery:s0 root root -- /system/bin/cp -rfp /vendor/app/t6/b46325e6-5c90-8252-2eada8e32e5180d6.ta /system/app/t6/
+    exec u:r:recovery:s0 root root -- /system/bin/cp -rfp /vendor/app/t6/cfg.ini /system/app/t6/
+    exec u:r:recovery:s0 root root -- /system/bin/cp -rfp /vendor/app/t6/data /system/app/t6/
+
+    # Copy TAs to SECONDARY location (/data/tee/t6)
+    exec u:r:recovery:s0 root root -- /system/bin/cp -rfp /vendor/app/t6/02662e8e-e126-11e5-b86d9a79f06e9478.ta /data/tee/t6/
+    exec u:r:recovery:s0 root root -- /system/bin/cp -rfp /vendor/app/t6/9ef77781-7bd5-4e39-965f20f6f211f46b.ta /data/tee/t6/
+    exec u:r:recovery:s0 root root -- /system/bin/cp -rfp /vendor/app/t6/b46325e6-5c90-8252-2eada8e32e5180d6.ta /data/tee/t6/
+
+    # Set proper permissions on TAs
+    chmod 0755 /system/app/t6
+    chmod 0644 /system/app/t6/*.ta
+    chmod 0644 /system/app/t6/cfg.ini
+    chmod 0755 /system/app/t6/data
+    chmod 0644 /data/tee/t6/*.ta
+
+    # Run custom setup script for legacy compatibility
+    exec u:r:recovery:s0 root root -- /vendor/bin/trustkernel.twrp.sh
+
+    # Create symlinks for alternate paths
+    symlink /system/app/t6 /vendor/app/mcRegistry
+    symlink /mnt/vendor/protect_f /protect_f
+
     install_keyring
     setprop crypto.ready 1
-
-service teed /vendor/bin/teed
-    user root
-    group root system readproc
-    seclabel u:r:recovery:s0
-    disabled
 
 service keystore_auth /system/bin/keystore_auth
     oneshot
