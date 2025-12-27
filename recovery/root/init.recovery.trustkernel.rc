@@ -57,6 +57,12 @@ on fs
     # Run custom setup script for legacy compatibility
     exec u:r:recovery:s0 root root -- /vendor/bin/trustkernel.twrp.sh
 
+    # Bind mount /system/app/t6 over /vendor/app/t6 so TKCore finds TAs
+    # /vendor is mounted from vendor partition, not ramdisk
+    mkdir /vendor/app 0755 root root
+    mkdir /vendor/app/t6 0755 root root
+    mount --bind /system/app/t6 /vendor/app/t6
+
     # Create symlinks for alternate paths
     symlink /system/app/t6 /vendor/app/mcRegistry
     symlink /mnt/vendor/protect_f /protect_f
