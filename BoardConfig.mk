@@ -129,14 +129,14 @@ VENDOR_SECURITY_PATCH := 2022-08-05
 PLATFORM_VERSION := 18.1.0
 
 
-## TWRP-Specific configuration - SIZE OPTIMIZED
+## TWRP-Specific configuration
 TW_THEME := portrait_hdpi
 TW_DEVICE_VERSION := kelexine-xda
 RECOVERY_SDCARD_ON_DATA := true
 TARGET_USES_MKE2FS := true
 TARGET_USE_CUSTOM_LUN_FILE_PATH := /config/usb_gadget/g1/functions/mass_storage.usb0/lun.%d/file
 TW_BRIGHTNESS_PATH := "/sys/class/leds/lcd-backlight/brightness"
-TW_DEFAULT_BRIGHTNESS := 125
+TW_DEFAULT_BRIGHTNESS := 120
 TW_MAX_BRIGHTNESS := 255
 TW_Y_OFFSET := 65
 TW_H_OFFSET := -60
@@ -152,6 +152,7 @@ TW_INCLUDE_PYTHON := true
 TW_NO_USB_STORAGE := true
 TW_EXTRA_LANGUAGES := false
 TW_DEFAULT_LANGUAGE := en
+TW_INCLUDE_RESETPROP := true
 TW_OEM_BUILD := true
 TW_SCREEN_BLANK_ON_BOOT := true
 TW_HAS_MTP := true

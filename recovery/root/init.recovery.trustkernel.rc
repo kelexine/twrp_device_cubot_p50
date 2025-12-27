@@ -18,6 +18,12 @@ on fs
     install_keyring
     setprop crypto.ready 1
 
+service teed /vendor/bin/teed
+    user root
+    group root system readproc
+    seclabel u:r:recovery:s0
+    disabled
+
 service keystore_auth /system/bin/keystore_auth
     oneshot
     user system
@@ -32,6 +38,7 @@ service keystore /system/bin/keystore /tmp/misc/keystore
     seclabel u:r:recovery:s0
 
 on property:hwservicemanager.ready=true
+    start teed
     start vendor.keymaster-4-0-trustkernel
     start vendor.gatekeeper-1-0
 
