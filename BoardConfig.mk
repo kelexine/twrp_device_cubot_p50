@@ -9,6 +9,7 @@ DEVICE_PATH := device/cubot/marlon
 
 # SELinux
 BOARD_SEPOLICY_DIRS += $(DEVICE_PATH)/sepolicy/recovery
+SELINUX_IGNORE_NEVERALLOWS := true
 
 # For building with minimal manifest
 ALLOW_MISSING_DEPENDENCIES := true
