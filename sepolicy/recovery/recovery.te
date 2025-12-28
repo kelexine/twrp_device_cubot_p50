@@ -31,8 +31,6 @@ allow recovery hidl_token_hwservice:hwservice_manager { add };
 allow recovery hwservicemanager_prop:property_service { set };
 allow recovery kernel:security { compute_av };
 allow recovery keystore_compat_hal_service:service_manager { add find };
-allow recovery keystore_crash_prop:file { getattr map open read };
-allow recovery keystore_crash_prop:property_service { set };
 allow recovery keystore_service:service_manager { find };
 allow recovery kmsg_device:chr_file { getattr write };
 allow recovery mnt_vendor_file:dir { add_name create getattr open read remove_name rmdir search setattr write };
