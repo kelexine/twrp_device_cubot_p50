@@ -133,9 +133,27 @@ jobs:
         name: TWRP Recovery for Cubot marlon "(${{ github.event.inputs.DEVICE_NAME }})" with run-id:${{ github.run_id }}
         tag_name: ${{ github.run_id }}
         body: |
-          TWRP Recovery for Cubot marlon
-          Manifest: ${{ github.event.inputs.MANIFEST_BRANCH }}
-          Device: ${{ github.event.inputs.DEVICE_NAME }}
-          Target: ${{ github.event.inputs.BUILD_TARGET }}.img
+          ## 📱 TWRP Recovery for Cubot Marlon (P50)
+          
+          **Status:** Beta / Decryption (WIP)
+          
+          ### 🛠 Changelog
+          - **WORK IN PROGRESS:** Data Decryption (FBE) still in progress
+            - *Details:* Moved TrustZone Trusted Applications (TAs) to `/system` partition to prevent masking by vendor mount.
+            - *Decryption Attempt:*Attempt to fix `TEE_ERROR_ITEM_NOT_FOUND` (0xffff0007) errors.
+          
+          ### ℹ️ Build Details
+          | Component | Version/Value |
+          |-----------|:-------------:|
+          | **Manifest** | `${{ github.event.inputs.MANIFEST_BRANCH }}` |
+          | **Device** | `${{ github.event.inputs.DEVICE_NAME }}` |
+          | **Target** | `${{ github.event.inputs.BUILD_TARGET }}.img` |
+          | **Branch** | `${{ github.ref_name }}` |
+
+          > [!NOTE]
+          > Data Decryption (FBE) is still work in progress.
+          
+          > [!WARNING]
+          > TWRP might hang in Splash screen.
       env:
         GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
