@@ -10,6 +10,9 @@ LOCAL_PATH := device/cubot/marlon
 # Dynamic Partitions
 PRODUCT_USE_DYNAMIC_PARTITIONS := true
 
+# SELinux
+BOARD_SEPOLICY_DIRS += $(LOCAL_PATH)/sepolicy/recovery
+
 # Minimal Boot Control HAL
 PRODUCT_PACKAGES += \
     android.hardware.boot@1.1-mtkimpl.recovery \
