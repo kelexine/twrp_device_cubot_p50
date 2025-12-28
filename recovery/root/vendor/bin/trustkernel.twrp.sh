@@ -4,7 +4,7 @@
 # Copies TAs to all locations where TKCore might look
 # Fixed version that copies FROM recovery ramdisk TO expected locations
 
-TA_SOURCE="/vendor/app/t6"
+TA_SOURCE="/system/app/t6"
 SYSTEM_TA="/system/app/t6"
 DATA_TA="/data/tee/t6"
 PERSIST_TA="/mnt/vendor/persist/t6"
