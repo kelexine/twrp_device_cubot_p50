@@ -26,6 +26,12 @@ on fs
     mkdir /data/tee 0755 system system
     mkdir /data/tee/t6 0755 system system
 
+    # Create paths required by teed service
+    mkdir /data/vendor 0755 root root
+    mkdir /data/vendor/t6 0755 system system
+    mkdir /data/vendor/t6/fs 0755 system system
+    mkdir /data/vendor/t6/app 0755 system system
+
     # Create legacy TA directories for compatibility
     mkdir /mnt/vendor/persist/t6 0755 system system
     mkdir /mnt/vendor/persist/t6_twrp 0755 system system
