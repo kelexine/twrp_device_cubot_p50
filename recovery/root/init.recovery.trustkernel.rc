@@ -8,6 +8,10 @@ on fs
     mkdir /mnt/vendor/nvdata 0771 system system
     mkdir /mnt/vendor/nvcfg 0771 system system
 
+    # Mount vendor partition for TA access (CRITICAL for teed)
+    mkdir /vendor 0755 root root
+    mount ext4 /dev/block/by-name/vendor /vendor ro
+
     # Mount vendor partitions
     mount ext4 /dev/block/by-name/apd /mnt/vendor/apd rw
     mount ext4 /dev/block/by-name/protect1 /mnt/vendor/protect_f rw

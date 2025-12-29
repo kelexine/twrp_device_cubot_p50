@@ -55,7 +55,7 @@ on property:vendor.trustkernel.ready=true
 service teed /vendor/bin/teed \
     --datapath /data/vendor/t6/fs \
     --sptapath /data/vendor/t6/app \
-    --systapath /system/app/t6 \
+    --systapath /vendor/app/t6 \
     --rpmbdev /dev/mmcblk0rpmb \
     --rpmbdev /dev/rpmb0 \
     --prot /mnt/vendor/persist/t6_twrp \
