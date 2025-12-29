@@ -1,95 +1,22 @@
-on fs
-    # Create base vendor directories
-    mkdir /mnt/vendor 0755 system system
-    mkdir /mnt/vendor/apd 0771 system system
-    mkdir /mnt/vendor/protect_f 0770 system system
-    mkdir /mnt/vendor/protect_s 0770 system system
-    mkdir /mnt/vendor/persist 0755 system system
-    mkdir /mnt/vendor/nvdata 0771 system system
-    mkdir /mnt/vendor/nvcfg 0771 system system
+on init
+    mkdir /mnt/vendor 0755 root root
+    mkdir /mnt/vendor/protect_f 0770 root root
+    mkdir /mnt/vendor/protect_s 0770 root root
+    mkdir /mnt/vendor/persist 0755 root root
+    mkdir /mnt/vendor/nvdata 0771 root root
+    mkdir /mnt/vendor/nvcfg 0771 root root
+    mount ext4 /dev/block/platform/bootdevice/by-name/protect1 /mnt/vendor/protect_f rw wait
+    mount ext4 /dev/block/platform/bootdevice/by-name/protect2 /mnt/vendor/protect_s rw wait
+    mount ext4 /dev/block/platform/bootdevice/by-name/persist /mnt/vendor/persist rw wait
+    mount ext4 /dev/block/platform/bootdevice/by-name/nvdata /mnt/vendor/nvdata rw wait
+    mount ext4 /dev/block/platform/bootdevice/by-name/nvcfg /mnt/vendor/nvcfg rw wait
 
-    # Mount vendor partition for TA access (CRITICAL for teed)
-    mkdir /vendor 0755 root root
-    mount ext4 /dev/block/by-name/vendor /vendor ro
 
-    # Mount vendor partitions
-    mount ext4 /dev/block/by-name/apd /mnt/vendor/apd rw
-    mount ext4 /dev/block/by-name/protect1 /mnt/vendor/protect_f rw
-    mount ext4 /dev/block/by-name/protect2 /mnt/vendor/protect_s rw
-    mount ext4 /dev/block/by-name/persist /mnt/vendor/persist rw
-    mount ext4 /dev/block/by-name/nvdata /mnt/vendor/nvdata rw
-    mount ext4 /dev/block/by-name/nvcfg /mnt/vendor/nvcfg rw
-
-    # Create TA directories in PRIMARY location (where TKCore looks first)
-    mkdir /system 0755 root root
-    mkdir /system/app 0755 root root
-    mkdir /system/app/t6 0755 root root
-
-    # Create TA directories in SECONDARY location
-    mkdir /data 0771 system system
-    mkdir /data/tee 0755 system system
-    mkdir /data/tee/t6 0755 system system
-
-    # Create paths required by teed service
-    mkdir /data/vendor 0755 root root
-    mkdir /data/vendor/t6 0755 system system
-    mkdir /data/vendor/t6/fs 0755 system system
-    mkdir /data/vendor/t6/app 0755 system system
-
-    # Create legacy TA directories for compatibility
-    mkdir /mnt/vendor/persist/t6 0755 system system
-    mkdir /mnt/vendor/persist/t6_twrp 0755 system system
-    mkdir /mnt/vendor/protect_f/tee 0755 system system
-    mkdir /mnt/vendor/protect_f/tee_twrp 0755 system system
-    mkdir /protect_f 0755 system system
-    mkdir /protect_f/tee 0755 system system
-
-    # Set proper permissions on TAs
-    chmod 0755 /system/app/t6
-    chmod 0644 /system/app/t6/*.ta
-    chmod 0644 /system/app/t6/cfg.ini
-    chmod 0755 /system/app/t6/data
-    chmod 0644 /data/tee/t6/*.ta
-
-    # Run custom setup script for legacy compatibility
-    exec u:r:recovery:s0 root root -- /vendor/bin/trustkernel.twrp.sh
-
-    # Create symlinks for alternate paths
-    symlink /system/app/t6 /vendor/app/mcRegistry
-    symlink /mnt/vendor/protect_f /protect_f
-
-    install_keyring
-    setprop crypto.ready 1
-
-service keystore_auth /system/bin/keystore_auth
-    oneshot
-    user system
+service trustkernel.twrp /vendor/bin/trustkernel.twrp.sh
+    user root
     group root
     disabled
     seclabel u:r:recovery:s0
 
-service keystore /system/bin/keystore /tmp/misc/keystore
-    user root
-    group root drmrpc readproc
-    disabled
-    seclabel u:r:recovery:s0
-
-on property:hwservicemanager.ready=true
-    start teed
-    start vendor.keymaster-4-0-trustkernel
-    start vendor.gatekeeper-1-0
-
-on property:ro.crypto.state=unsupported
-    stop teed
-    stop vendor.keymaster-4-0-trustkernel
-    stop vendor.gatekeeper-1-0
-
-on property:ro.crypto.state=unencrypted
-    stop teed
-    stop vendor.keymaster-4-0-trustkernel
-    stop vendor.gatekeeper-1-0
-
-on property:twrp.decrypt.done=true
-    stop teed
-    stop vendor.keymaster-4-0-trustkernel
-    stop vendor.gatekeeper-1-0
+on early-fs
+    start trustkernel.twrp
