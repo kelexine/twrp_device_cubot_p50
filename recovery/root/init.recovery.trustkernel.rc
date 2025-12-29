@@ -1,57 +1,68 @@
 on post-fs
-	write /proc/bootprof "tkcore: prepare system ta path"
+    write /proc/bootprof "tkcore: prepare system ta path"
 
-	restorecon /mnt/vendor/persist
-	mkdir /mnt/vendor/persist/t6
-	chown root root /mnt/vendor/persist/t6
-	restorecon /mnt/vendor/persist/t6
+    
+    mkdir /mnt/vendor 0771 root root
+    mkdir /mnt/vendor/protect_f 0771 root root
+    mkdir /mnt/vendor/protect_s 0771 root root
+    mount ext4 /dev/block/platform/bootdevice/by-name/protect1 /mnt/vendor/protect_f wait
+    mount ext4 /dev/block/platform/bootdevice/by-name/protect2 /mnt/vendor/protect_s wait
 
-	restorecon /mnt/vendor/protect_f
-	mkdir /mnt/vendor/protect_f/tee
-	chown root root /mnt/vendor/protect_f/tee
-	restorecon /mnt/vendor/protect_f/tee
+    rmdir /mnt/vendor/persist
+    symlink /persist /mnt/vendor/persist
 
-	start teed
+
+    restorecon /mnt/vendor/persist
+    mkdir /mnt/vendor/persist/t6
+    chown root root /mnt/vendor/persist/t6
+    restorecon /mnt/vendor/persist/t6
+
+    restorecon /mnt/vendor/protect_f
+    mkdir /mnt/vendor/protect_f/tee
+    chown root root /mnt/vendor/protect_f/tee
+    restorecon /mnt/vendor/protect_f/tee
+
+    start teed
 
 on property:vendor.trustkernel.fs.state=prepare
-	write /proc/bootprof "tkcore: prepare basic"
-	mkdir /data/vendor/t6
-	chown root root /data/vendor/t6
-	restorecon /data/vendor/t6
+    write /proc/bootprof "tkcore: prepare basic"
+    mkdir /data/vendor/t6
+    chown root root /data/vendor/t6
+    restorecon /data/vendor/t6
 
-	write /proc/bootprof "tkcore: prepare sfs"
-	mkdir /data/vendor/t6/fs
-	chown root root /data/vendor/t6/fs
-	restorecon /data/vendor/t6/fs
+    write /proc/bootprof "tkcore: prepare sfs"
+    mkdir /data/vendor/t6/fs
+    chown root root /data/vendor/t6/fs
+    restorecon /data/vendor/t6/fs
 
-	write /proc/bootprof "tkcore: prepare service provider ta path"
-	mkdir /data/vendor/t6/app
-	chown root root /data/vendor/t6/app
-	restorecon /data/vendor/t6/app
-	setprop vendor.trustkernel.fs.state ready
+    write /proc/bootprof "tkcore: prepare service provider ta path"
+    mkdir /data/vendor/t6/app
+    chown root root /data/vendor/t6/app
+    restorecon /data/vendor/t6/app
+    setprop vendor.trustkernel.fs.state ready
 
 # For non-encrypted case
 on property:ro.crypto.state=unencrypted
-	setprop vendor.trustkernel.fs.mode 1
-	setprop vendor.trustkernel.fs.state prepare
+    setprop vendor.trustkernel.fs.mode 1
+    setprop vendor.trustkernel.fs.state prepare
 
 # For FDE/encrypted successfully
 on property:vold.decrypt=trigger_restart_framework
-	setprop vendor.trustkernel.fs.mode 2
-	setprop vendor.trustkernel.fs.state prepare
+    setprop vendor.trustkernel.fs.mode 2
+    setprop vendor.trustkernel.fs.state prepare
 
 # For FBE/encrypted successfully
 on property:ro.crypto.type=file && property:ro.crypto.state=encrypted
-	setprop vendor.trustkernel.fs.mode 3
-	setprop vendor.trustkernel.fs.state prepare
+    setprop vendor.trustkernel.fs.mode 3
+    setprop vendor.trustkernel.fs.state prepare
 
 on property:vendor.trustkernel.log.state=ready
-	write /proc/bootprof "tkcore: prepare log file"
-	restorecon /data/vendor/t6/tkcore.log
-	setprop vendor.trustkernel.log.state enable
+    write /proc/bootprof "tkcore: prepare log file"
+    restorecon /data/vendor/t6/tkcore.log
+    setprop vendor.trustkernel.log.state enable
 
 on property:vendor.trustkernel.ready=true
-       start tee_check_keybox
+    start tee_check_keybox
 
 service teed /vendor/bin/teed \
     --datapath /data/vendor/t6/fs \
@@ -63,16 +74,16 @@ service teed /vendor/bin/teed \
     --prot /mnt/vendor/protect_f/tee \
     --logpath /data/vendor/tkcore.log \
     --proprefix vendor.trustkernel
-	capabilities SYS_RAWIO
-	user root
-	group root
-	class core
-	seclabel u:r:recovery:s0
+    capabilities SYS_RAWIO
+    user root
+    group root
+    class core
+    seclabel u:r:recovery:s0
 
 service tee_check_keybox /vendor/bin/tee_check_keybox
-       user root
-       group root
-       class main
-       disabled
-       oneshot
-       seclabel u:r:recovery:s0
+    user root
+    group root
+    class main
+    disabled
+    oneshot
+    seclabel u:r:recovery:s0
