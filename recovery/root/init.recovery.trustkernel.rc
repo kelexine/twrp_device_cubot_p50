@@ -61,7 +61,7 @@ service teed /vendor/bin/teed \
     --rpmbdev /dev/rpmb0 \
     --prot /mnt/vendor/persist/t6 \
     --prot /mnt/vendor/protect_f/tee \
-    --logpath /tmp/tkcore.log \
+    --logpath /data/vendor/tkcore.log \
     --proprefix vendor.trustkernel
 	capabilities SYS_RAWIO
 	user root
