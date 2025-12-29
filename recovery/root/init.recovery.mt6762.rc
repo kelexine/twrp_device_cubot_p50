@@ -1,26 +1,47 @@
 import /init.recovery.trustkernel.rc
-import /vendor/etc/init/trustkernel.rc
 import /vendor/etc/init/android.hardware.gatekeeper@1.0-service.rc
 import /vendor/etc/init/android.hardware.keymaster@4.0-service.trustkernel.rc
 import /vendor/etc/init/vendor.mediatek.hardware.keymaster_attestation@1.1-service.rc
 
+on init
+    export LD_LIBRARY_PATH /system/lib64:/vendor/lib64:/vendor/lib64/hw:/system/lib64/hw
+    setprop sys.usb.configfs 1
+    setprop sys.usb.ffs.aio_compat 1
+
+on fs && property:ro.debuggable=0
+    # distinguish USB shoulde connect or not, i.e. CDP vs SDP
+    write /sys/class/udc/musb-hdrc/device/cmode 2
+    # set charging free due to it wait for USB activation
+    start adbd
+
+on post-fs
+    # Fix OF installer
+    symlink /dev/block/platform/bootdevice /dev/block/bootdevice
+    # Support A/B feature for emmc boot region
+    symlink /dev/block/sda /dev/block/mmcblk0boot0
+    symlink /dev/block/sdb /dev/block/mmcblk0boot1
+    symlink /dev/block/mmcblk0boot0 /dev/block/platform/bootdevice/by-name/preloader_a
+    symlink /dev/block/mmcblk0boot1 /dev/block/platform/bootdevice/by-name/preloader_b
+
+    exec u:r:update_engine:s0 root root -- /system/bin/mtk_plpath_utils
+
+
 service hwservicemanager /system/bin/hwservicemanager
     user root
-    group root readproc
-    disabled
+    group root
     onrestart setprop hwservicemanager.ready false
+    disabled
     seclabel u:r:recovery:s0
 
-service servicemanager /system/bin/servicemanager
+on init
+    start vndservicemanager
+
+service vndservicemanager /system/bin/vndservicemanager /dev/vndbinder
+    disabled
     user root
     group root readproc
-    disabled
-    seclabel u:r:recovery:s0
-
-service keystore /system/bin/keystore /tmp/misc/keystore
-    user root
-    group root drmrpc readproc
-    disabled
+    writepid /dev/cpuset/system-background/tasks
+    shutdown critical
     seclabel u:r:recovery:s0
 
 service keystore_auth /system/bin/keystore_auth
@@ -30,44 +51,43 @@ service keystore_auth /system/bin/keystore_auth
     disabled
     seclabel u:r:recovery:s0
 
+service keystore /system/bin/keystore /tmp/misc/keystore
+    user root
+    group root drmrpc readproc log
+    disabled
+    seclabel u:r:recovery:s0
+
 on fs
     install_keyring
     setprop crypto.ready 1
     start hwservicemanager
     start servicemanager
 
-on post-fs
-    # Support A/B feature for EMMC and UFS boot region
-    symlink /dev/block/sda /dev/block/mmcblk0boot0
-    symlink /dev/block/sdb /dev/block/mmcblk0boot1
-    symlink /dev/block/mmcblk0boot0 /dev/block/platform/bootdevice/by-name/preloader_a
-    symlink /dev/block/mmcblk0boot1 /dev/block/platform/bootdevice/by-name/preloader_b
-
-    # Support A/B feature for combo emmc and ufs OTA update
-    symlink /dev/block/platform/bootdevice/by-name/preloader_a /dev/block/platform/bootdevice/by-name/preloader_emmc_a
-    symlink /dev/block/platform/bootdevice/by-name/preloader_b /dev/block/platform/bootdevice/by-name/preloader_emmc_b
-    symlink /dev/block/platform/bootdevice/by-name/preloader_a /dev/block/platform/bootdevice/by-name/preloader_ufs_a
-    symlink /dev/block/platform/bootdevice/by-name/preloader_b /dev/block/platform/bootdevice/by-name/preloader_ufs_b
-
 on property:hwservicemanager.ready=true
+    write /proc/bootprof "tkcore: start decryption services"
     start vendor.keymaster-4-0-trustkernel
     start vendor.gatekeeper-1-0
-    #start keymaster_attestation-1-1
 
 on property:ro.crypto.state=unsupported
+    stop tee_check_keybox
     stop teed
+    stop servicemanager
+    stop hwservicemanager
     stop vendor.keymaster-4-0-trustkernel
     stop vendor.gatekeeper-1-0
-    #stop keymaster_attestation-1-1
 
 on property:ro.crypto.state=unencrypted
+    stop tee_check_keybox
     stop teed
+    stop servicemanager
+    stop hwservicemanager
     stop vendor.keymaster-4-0-trustkernel
     stop vendor.gatekeeper-1-0
-    #stop keymaster_attestation-1-1
 
 on property:twrp.decrypt.done=true
+    stop tee_check_keybox
     stop teed
+    stop servicemanager
+    stop hwservicemanager
     stop vendor.keymaster-4-0-trustkernel
     stop vendor.gatekeeper-1-0
-    #stop keymaster_attestation-1-1
