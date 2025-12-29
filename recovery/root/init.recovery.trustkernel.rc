@@ -67,6 +67,7 @@ service teed /vendor/bin/teed \
 	user root
 	group root
 	class core
+	seclabel u:r:recovery:s0
 
 service tee_check_keybox /vendor/bin/tee_check_keybox
        user root
@@ -74,3 +75,4 @@ service tee_check_keybox /vendor/bin/tee_check_keybox
        class main
        disabled
        oneshot
+       seclabel u:r:recovery:s0
