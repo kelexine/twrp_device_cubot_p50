@@ -24,7 +24,7 @@ PRODUCT_PACKAGES += \
     bootctl
 
 PRODUCT_PACKAGES_DEBUG += \
-    bootctrl.mt6762
+    bootctrl.mt6762 \
     bootctrl.mt6765
 
 # Fastbootd
