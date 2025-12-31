@@ -10,10 +10,22 @@ LOCAL_PATH := device/cubot/marlon
 # Dynamic Partitions
 PRODUCT_USE_DYNAMIC_PARTITIONS := true
 
-# Minimal Boot Control HAL
+# Health HAL
+PRODUCT_PACKAGES += \
+    android.hardware.health@2.1-impl \
+    android.hardware.health@2.1-service \
+    libhealthd.$(PRODUCT_PLATFORM)
+    
+    
+# Boot Control HAL
 PRODUCT_PACKAGES += \
     android.hardware.boot@1.1-mtkimpl.recovery \
+    android.hardware.boot@1.1-mtkimpl \
     bootctl
+
+PRODUCT_PACKAGES_DEBUG += \
+    bootctrl.mt6762
+    bootctrl.mt6765
 
 # Fastbootd
 PRODUCT_PACKAGES += \
@@ -31,11 +43,6 @@ PRODUCT_TARGET_VNDK_VERSION := 30
 # API
 PRODUCT_SHIPPING_API_LEVEL := 30
 
-# Health HAL
-PRODUCT_PACKAGES += \
-    android.hardware.health@2.1-impl \
-    android.hardware.health@2.1-service \
-    libhealthd.$(PRODUCT_PLATFORM)
 
 # OEM otacerts
 PRODUCT_EXTRA_RECOVERY_KEYS += \

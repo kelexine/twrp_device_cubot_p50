@@ -136,6 +136,6 @@
 /dev/ttyACM0              0660   radio      radio
 
 # TrustKernel add
-/dev/tkcoredrv            0777   root     root
-/dev/mmcblk0rpmb          0777   root     system
-/dev/rpmb0                0777   root     system
+/dev/tkcoredrv            0666   root     root
+/dev/mmcblk0rpmb          0666  root     system
+/dev/rpmb0                0666   root     system

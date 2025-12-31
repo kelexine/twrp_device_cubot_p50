@@ -15,6 +15,9 @@ on fs && property:ro.debuggable=0
     start adbd
 
 on post-fs
+    start hwservicemanager
+    start servicemanager
+
     # Fix OF installer
     symlink /dev/block/platform/bootdevice /dev/block/bootdevice
     # Support A/B feature for emmc boot region
@@ -59,10 +62,32 @@ service keystore /system/bin/keystore /tmp/misc/keystore
 
 on fs
     install_keyring
-    setprop crypto.ready 1
-    start hwservicemanager
-    start servicemanager
 
+service mtk.plpath.utils.link /system/bin/mtk_plpath_utils
+    class main
+    user root
+    group root system
+    disabled
+    oneshot
+    seclabel u:r:recovery:s0
+
+
+    
+on boot
+    start boot-hal-1-1
+    start health-hal-2-1
+
+on init
+    #create mountpoint for /mnt/vendor/persist partition
+    mkdir /mnt/vendor/persist 0771 root root
+
+on post-fs
+    chown root root /mnt/vendor/persist
+    chmod 0771 /mnt/vendor/persist
+
+    # We restorecon /mnt/vendor/persist to set SEPolicy label.
+    restorecon /mnt/vendor/persist
+    
 on property:hwservicemanager.ready=true
     write /proc/bootprof "tkcore: start decryption services"
     start vendor.keymaster-4-0-trustkernel
