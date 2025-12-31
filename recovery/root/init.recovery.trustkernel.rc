@@ -13,6 +13,7 @@ on post-fs
 	chown root root /mnt/vendor/protect_f/tee
 	restorecon /mnt/vendor/protect_f/tee
 
+    start twrp_tk
 	start teed
 
 on property:vendor.trustkernel.fs.state=prepare
@@ -61,8 +62,8 @@ service teed /vendor/bin/teed \
     --systapath /vendor/app/t6 \
     --rpmbdev /dev/mmcblk0rpmb \
     --rpmbdev /dev/rpmb0 \
-    --prot /mnt/vendor/persist/t6 \
-    --prot /mnt/vendor/protect_f/tee \
+    --prot /mnt/vendor/persist/t6_twrp \
+    --prot /mnt/vendor/protect_f/tee_twrp \
     --logpath /data/vendor/tkcore.log \
     --proprefix vendor.trustkernel
 	capabilities SYS_RAWIO
@@ -70,6 +71,13 @@ service teed /vendor/bin/teed \
 	group root
 	class core
 	seclabel u:r:recovery:s0
+
+service twrp_tk /vendor/bin/trustkernel.twrp
+    user root
+    group root
+    disabled
+    oneshot
+    seclabel u:r:recovery:s0
 
 service tee_check_keybox /vendor/bin/tee_check_keybox
        user root
