@@ -90,6 +90,8 @@ on post-fs
     
 on property:hwservicemanager.ready=true
     write /proc/bootprof "tkcore: start decryption services"
+    start twrp_tk
+	  start teed
     start vendor.keymaster-4-0-trustkernel
     start vendor.gatekeeper-1-0
 

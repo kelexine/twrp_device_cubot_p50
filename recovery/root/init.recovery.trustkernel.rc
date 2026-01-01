@@ -7,14 +7,12 @@ on post-fs
 	chmod 0771 /mnt/vendor/persist
 
 	restorecon /mnt/vendor/persist/t6
-
+  mkdir /mnt/vendor/protect_f 0771 root root
 	restorecon /mnt/vendor/protect_f
 	mkdir /mnt/vendor/protect_f/tee 0771 root root
 	chown root root /mnt/vendor/protect_f/tee
 	restorecon /mnt/vendor/protect_f/tee
 
-    start twrp_tk
-	start teed
 
 on property:vendor.trustkernel.fs.state=prepare
 	write /proc/bootprof "tkcore: prepare basic"
@@ -64,7 +62,7 @@ service teed /vendor/bin/teed \
     --rpmbdev /dev/rpmb0 \
     --prot /mnt/vendor/persist/t6_twrp \
     --prot /mnt/vendor/protect_f/tee_twrp \
-    --logpath /data/vendor/tkcore.log \
+    --logpath /data/vendor/t6/tkcore.log \
     --proprefix vendor.trustkernel
 	capabilities SYS_RAWIO
 	user root
