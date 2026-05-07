@@ -64,11 +64,9 @@ service teed /vendor/bin/teed \
     --prot /mnt/vendor/protect_f/tee_twrp \
     --logpath /data/vendor/t6/tkcore.log \
     --proprefix vendor.trustkernel
-	capabilities SYS_RAWIO
-	user root
-	group root
-	class core
-	seclabel u:r:recovery:s0
+        user root
+        group root
+        class core	seclabel u:r:recovery:s0
 
 service twrp_tk /vendor/bin/trustkernel.twrp
     user root
