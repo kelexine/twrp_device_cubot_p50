@@ -10,3 +10,12 @@ ro.crypto.metadata.enabled=true
 ro.crypto.support_metadata_encrypt=true
 ro.crypto.uses_fs_ioc_add_encryption_key=true
 ro.sys.usb.mtp.whql.enable=0
+
+# Vendor properties to align decryption
+ro.vendor.build.security_patch=2022-08-05
+ro.vendor.build.fingerprint=CUBOT/P50_EEA/P50:11/RP1A.200720.011/20220816:user/release-keys
+ro.product.vendor.brand=CUBOT
+ro.product.vendor.device=P50
+ro.product.vendor.model=P50
+ro.product.vendor.name=P50_EEA
+ro.product.vendor.manufacturer=CUBOT
