@@ -5,13 +5,19 @@ on post-fs
 	mkdir /mnt/vendor/persist/t6 0771 root root
 	chown root root /mnt/vendor/persist/t6
 	chmod 0771 /mnt/vendor/persist
+	mkdir /mnt/vendor/persist/t6_twrp 0771 root root
+	chown root root /mnt/vendor/persist/t6_twrp
 
 	restorecon /mnt/vendor/persist/t6
-  mkdir /mnt/vendor/protect_f 0771 root root
+	restorecon /mnt/vendor/persist/t6_twrp
+	mkdir /mnt/vendor/protect_f 0771 root root
 	restorecon /mnt/vendor/protect_f
 	mkdir /mnt/vendor/protect_f/tee 0771 root root
 	chown root root /mnt/vendor/protect_f/tee
 	restorecon /mnt/vendor/protect_f/tee
+	mkdir /mnt/vendor/protect_f/tee_twrp 0771 root root
+	chown root root /mnt/vendor/protect_f/tee_twrp
+	restorecon /mnt/vendor/protect_f/tee_twrp
 
 
 on property:vendor.trustkernel.fs.state=prepare
@@ -64,9 +70,11 @@ service teed /vendor/bin/teed \
     --prot /mnt/vendor/protect_f/tee_twrp \
     --logpath /data/vendor/t6/tkcore.log \
     --proprefix vendor.trustkernel
-        user root
-        group root
-        class core	seclabel u:r:recovery:s0
+    user root
+    group root
+    disabled
+    class core
+    seclabel u:r:recovery:s0
 
 service twrp_tk /vendor/bin/trustkernel.twrp
     user root
