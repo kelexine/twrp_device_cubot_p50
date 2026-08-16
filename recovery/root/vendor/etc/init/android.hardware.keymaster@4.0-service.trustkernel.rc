@@ -1,4 +1,5 @@
 service vendor.keymaster-4-0-trustkernel /vendor/bin/hw/android.hardware.keymaster@4.0-service.trustkernel
+    interface android.hardware.keymaster@4.0::IKeymasterDevice default
     class early_hal
     user  root
     group  root drmrpc
