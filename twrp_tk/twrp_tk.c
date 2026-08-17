@@ -106,6 +106,7 @@ static int copy_dir_recursive(const char *src, const char *dst) {
     if (mkdir_p(dst, st.st_mode) != 0) {
         return -1;
     }
+    chown(dst, st.st_uid, st.st_gid);
 
     DIR *dir = opendir(src);
     if (!dir) {
