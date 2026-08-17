@@ -12,7 +12,10 @@ on post-fs
 	mkdir /mnt/vendor/protect_f/tee 0771 root root
 	chown root root /mnt/vendor/protect_f/tee
 	restorecon /mnt/vendor/protect_f/tee
-	
+
+
+on property:init.svc.twrp_tk=stopped
+	write /proc/bootprof "tkcore: isolation complete, starting teed"
 	start teed
 
 
@@ -54,7 +57,10 @@ on property:vendor.trustkernel.log.state=ready
 	setprop vendor.trustkernel.log.state enable
 
 on property:vendor.trustkernel.ready=true
+	write /proc/bootprof "tkcore: teed ready, starting HALs"
 	start tee_check_keybox
+	start vendor.keymaster-4-0-trustkernel
+	start vendor.gatekeeper-1-0
 
 service teed /vendor/bin/teed \
     --datapath /data/vendor/t6/fs \

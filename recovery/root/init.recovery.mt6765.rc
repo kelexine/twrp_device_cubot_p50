@@ -90,10 +90,8 @@ on post-fs
     restorecon /mnt/vendor/persist
     
 on property:hwservicemanager.ready=true
-    write /proc/bootprof "tkcore: start decryption services"
-    start twrp_tk
-    start vendor.keymaster-4-0-trustkernel
-    start vendor.gatekeeper-1-0
+	write /proc/bootprof "tkcore: start decryption services"
+	start twrp_tk
 
 on property:ro.crypto.state=unsupported
     stop tee_check_keybox
