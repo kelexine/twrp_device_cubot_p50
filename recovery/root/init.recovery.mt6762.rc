@@ -63,21 +63,6 @@ service keystore /system/bin/keystore /tmp/misc/keystore
 on fs
     install_keyring
 
-    # Mount secure storage partitions for decryption
-    mkdir /mnt/vendor/persist 0771 root root
-    mount ext4 /dev/block/platform/bootdevice/by-name/persist /mnt/vendor/persist rw
-    
-    mkdir /mnt/vendor/protect_f 0771 root root
-    mount ext4 /dev/block/platform/bootdevice/by-name/protect1 /mnt/vendor/protect_f rw
-    
-    mkdir /mnt/vendor/protect_s 0771 root root
-    mount ext4 /dev/block/platform/bootdevice/by-name/protect2 /mnt/vendor/protect_s rw
-    
-    mkdir /mnt/vendor/nvdata 0771 root root
-    mount ext4 /dev/block/platform/bootdevice/by-name/nvdata /mnt/vendor/nvdata rw
-    
-    mkdir /mnt/vendor/nvcfg 0771 root root
-    mount ext4 /dev/block/platform/bootdevice/by-name/nvcfg /mnt/vendor/nvcfg rw
 
 service mtk.plpath.utils.link /system/bin/mtk_plpath_utils
     class main
@@ -106,7 +91,6 @@ on post-fs
     
 on property:hwservicemanager.ready=true
     write /proc/bootprof "tkcore: start decryption services"
-    start teed
     start twrp_tk
     start vendor.keymaster-4-0-trustkernel
     start vendor.gatekeeper-1-0
