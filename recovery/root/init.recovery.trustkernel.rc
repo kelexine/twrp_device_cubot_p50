@@ -13,8 +13,11 @@ on post-fs
 
 
 on property:init.svc.twrp_tk=stopped
-	write /proc/bootprof "tkcore: isolation complete, starting teed"
-	setprop vendor.trustkernel.fs.state ready
+	write /proc/bootprof "tkcore: isolation complete"
+	setprop vendor.trustkernel.isolation.state ready
+
+on property:vendor.trustkernel.isolation.state=ready && property:vendor.trustkernel.fs.state=ready
+	write /proc/bootprof "tkcore: isolation + fs prep complete, starting teed"
 	start teed
 
 
