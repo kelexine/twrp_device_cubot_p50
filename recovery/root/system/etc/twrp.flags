@@ -12,11 +12,11 @@
 # mount point       fstype    device                                                                flags
 /recovery               emmc      /dev/block/platform/bootdevice/by-name/recovery                           flags=display="Recovery";flashimg=1;backup=1;
 /cache          ext4      /dev/block/platform/bootdevice/by-name/cache                       flags=display="Cache";backup=1;wipeingui;
-/protect_f         ext4      /dev/block/platform/bootdevice/by-name/protect1                       flags=display="Protect_f";backup=1;
-/protect_s         ext4      /dev/block/platform/bootdevice/by-name/protect2                       flags=display="Protect_s";backup=1;
-/nvdata             ext4      /dev/block/platform/bootdevice/by-name/nvdata                         flags=display="Nvdata";backup=1;
-/nvcfg              ext4      /dev/block/platform/bootdevice/by-name/nvcfg                          flags=display="Nvcfg";backup=1;
-/persist            ext4      /dev/block/platform/bootdevice/by-name/persist                        flags=display="Persist";backup=1;flashimg=1;
+/protect_f         ext4      /dev/block/platform/bootdevice/by-name/protect1                       flags=display="Protect_f";backup=1;mounttodecrypt=1;
+/protect_s         ext4      /dev/block/platform/bootdevice/by-name/protect2                       flags=display="Protect_s";backup=1;mounttodecrypt=1;
+/nvdata             ext4      /dev/block/platform/bootdevice/by-name/nvdata                         flags=display="Nvdata";backup=1;mounttodecrypt=1;
+/nvcfg              ext4      /dev/block/platform/bootdevice/by-name/nvcfg                          flags=display="Nvcfg";backup=1;mounttodecrypt=1;
+/persist            ext4      /dev/block/platform/bootdevice/by-name/persist                        flags=display="Persist";backup=1;flashimg=1;mounttodecrypt=1;
 /persistent         emmc      /dev/block/platform/bootdevice/by-name/frp                            flags=display="Persistent";backup=1;flashimg=1;
 /nvram              emmc      /dev/block/platform/bootdevice/by-name/nvram                          flags=display="Nvram";backup=1;flashimg=1;
 /proinfo            emmc      /dev/block/platform/bootdevice/by-name/proinfo

@@ -1,16 +1,16 @@
 /*
  * File: twrp_tk.c
  * Author: kelexine <https://github.com/kelexine>
- * Date: 2026-08-17
+ * Date: 2026-08-19
  * Purpose: TWRP Decryption Isolation utility for TrustKernel TEE
  *
  * Description:
- * Reconstructed via Ghidra MCP decompilation of the stripped static AArch64
- * binary at recovery/root/vendor/bin/trustkernel.twrp.
- *
- * Copies and isolates /mnt/vendor/persist/t6 -> /mnt/vendor/persist/t6_twrp
- * and /mnt/vendor/protect_f/tee -> /mnt/vendor/protect_f/tee_twrp so that
- * TWRP decryption operations do not alter Android OS persist/protection keys.
+ * Clones and isolates on-disk persist (/persist/t6) and protection (/protect_f/tee)
+ * partitions into in-memory sandbox directories (/mnt/vendor/persist/t6_twrp and
+ * /mnt/vendor/protect_f/tee_twrp on rootfs tmpfs). Enforces AID_SYSTEM (1000)
+ * ownership and proper permission bits so that teed (running as UID 1000)
+ * performs all key operations and RTC baseline creation in RAM, guaranteeing
+ * zero modification or corruption to on-disk Android OS key stores.
  */
 
 #include <stdio.h>
@@ -24,23 +24,26 @@
 #include <sys/types.h>
 #include <sys/time.h>
 
+#define AID_SYSTEM 1000
 #define COPY_BUFFER_SIZE 65536
 #define PATH_BUFFER_SIZE 4096
+#define DIR_MODE 0771
+#define BASE_FILE_MODE 0660
 
 static void remove_dir_recursive(const char *path) {
     struct stat st;
-    if (stat(path, &st) != 0) {
+    if (lstat(path, &st) != 0) {
         if (errno == ENOENT) {
             return;
         }
-        fprintf(stderr, "stat failed on %s: %s\n", path, strerror(errno));
+        fprintf(stderr, "[twrp_tk] lstat failed on %s: %s\n", path, strerror(errno));
         return;
     }
 
     if (S_ISDIR(st.st_mode)) {
         DIR *dir = opendir(path);
         if (!dir) {
-            fprintf(stderr, "opendir failed on %s: %s\n", path, strerror(errno));
+            fprintf(stderr, "[twrp_tk] opendir failed on %s: %s\n", path, strerror(errno));
             return;
         }
         struct dirent *de;
@@ -53,17 +56,17 @@ static void remove_dir_recursive(const char *path) {
             remove_dir_recursive(subpath);
         }
         closedir(dir);
-        if (rmdir(path) != 0) {
-            fprintf(stderr, "rmdir failed on %s: %s\n", path, strerror(errno));
+        if (rmdir(path) != 0 && errno != ENOENT) {
+            fprintf(stderr, "[twrp_tk] rmdir failed on %s: %s\n", path, strerror(errno));
         }
     } else {
-        if (unlink(path) != 0) {
-            fprintf(stderr, "unlink failed on %s: %s\n", path, strerror(errno));
+        if (unlink(path) != 0 && errno != ENOENT) {
+            fprintf(stderr, "[twrp_tk] unlink failed on %s: %s\n", path, strerror(errno));
         }
     }
 }
 
-static int mkdir_p(const char *path, mode_t mode) {
+static int mkdir_p(const char *path, mode_t mode, uid_t uid, gid_t gid) {
     char temp[PATH_BUFFER_SIZE + 1];
     snprintf(temp, sizeof(temp), "%s", path);
     size_t len = strlen(temp);
@@ -73,7 +76,16 @@ static int mkdir_p(const char *path, mode_t mode) {
 
     struct stat st;
     if (stat(temp, &st) == 0) {
-        return S_ISDIR(st.st_mode) ? 0 : -1;
+        if (S_ISDIR(st.st_mode)) {
+            if (chown(temp, uid, gid) != 0) {
+                fprintf(stderr, "[twrp_tk] chown %s to %d:%d failed: %s\n", temp, uid, gid, strerror(errno));
+            }
+            if (chmod(temp, mode) != 0) {
+                fprintf(stderr, "[twrp_tk] chmod %s to %04o failed: %s\n", temp, mode, strerror(errno));
+            }
+            return 0;
+        }
+        return -1;
     }
 
     for (char *p = temp + 1; *p; p++) {
@@ -81,8 +93,14 @@ static int mkdir_p(const char *path, mode_t mode) {
             *p = '\0';
             if (stat(temp, &st) != 0) {
                 if (mkdir(temp, mode) != 0 && errno != EEXIST) {
-                    fprintf(stderr, "mkdir failed on %s: %s\n", temp, strerror(errno));
+                    fprintf(stderr, "[twrp_tk] mkdir parent failed on %s: %s\n", temp, strerror(errno));
                     return -1;
+                }
+                if (chown(temp, uid, gid) != 0) {
+                    fprintf(stderr, "[twrp_tk] chown %s failed: %s\n", temp, strerror(errno));
+                }
+                if (chmod(temp, mode) != 0) {
+                    fprintf(stderr, "[twrp_tk] chmod %s failed: %s\n", temp, strerror(errno));
                 }
             }
             *p = '/';
@@ -90,27 +108,97 @@ static int mkdir_p(const char *path, mode_t mode) {
     }
 
     if (mkdir(temp, mode) != 0 && errno != EEXIST) {
-        fprintf(stderr, "mkdir failed on %s: %s\n", temp, strerror(errno));
+        fprintf(stderr, "[twrp_tk] mkdir failed on %s: %s\n", temp, strerror(errno));
         return -1;
     }
+    if (chown(temp, uid, gid) != 0) {
+        fprintf(stderr, "[twrp_tk] chown %s to %d:%d failed: %s\n", temp, uid, gid, strerror(errno));
+    }
+    if (chmod(temp, mode) != 0) {
+        fprintf(stderr, "[twrp_tk] chmod %s to %04o failed: %s\n", temp, mode, strerror(errno));
+    }
+    return 0;
+}
+
+static int copy_single_file(const char *src, const char *dst, mode_t src_mode, const struct timeval times[2]) {
+    int fd_in = open(src, O_RDONLY);
+    if (fd_in < 0) {
+        fprintf(stderr, "[twrp_tk] open src failed on %s: %s\n", src, strerror(errno));
+        return -1;
+    }
+
+    mode_t target_mode = (src_mode & 07777) | BASE_FILE_MODE;
+    int fd_out = open(dst, O_WRONLY | O_CREAT | O_TRUNC, target_mode);
+    if (fd_out < 0) {
+        fprintf(stderr, "[twrp_tk] open dst failed on %s: %s\n", dst, strerror(errno));
+        close(fd_in);
+        return -1;
+    }
+
+    void *buf = malloc(COPY_BUFFER_SIZE);
+    if (!buf) {
+        fprintf(stderr, "[twrp_tk] malloc buffer failed\n");
+        close(fd_in);
+        close(fd_out);
+        unlink(dst);
+        return -1;
+    }
+
+    ssize_t nread;
+    int write_err = 0;
+    while ((nread = read(fd_in, buf, COPY_BUFFER_SIZE)) > 0) {
+        ssize_t total_written = 0;
+        while (total_written < nread) {
+            ssize_t nwritten = write(fd_out, (char *)buf + total_written, (size_t)(nread - total_written));
+            if (nwritten < 0) {
+                fprintf(stderr, "[twrp_tk] write failed on %s: %s\n", dst, strerror(errno));
+                write_err = 1;
+                break;
+            }
+            total_written += nwritten;
+        }
+        if (write_err) {
+            break;
+        }
+    }
+
+    free(buf);
+    close(fd_in);
+
+    if (nread < 0 || write_err) {
+        close(fd_out);
+        unlink(dst);
+        return -1;
+    }
+
+    fsync(fd_out);
+    if (fchown(fd_out, AID_SYSTEM, AID_SYSTEM) != 0) {
+        fprintf(stderr, "[twrp_tk] fchown %s to AID_SYSTEM failed: %s\n", dst, strerror(errno));
+    }
+    if (fchmod(fd_out, target_mode) != 0) {
+        fprintf(stderr, "[twrp_tk] fchmod %s to %04o failed: %s\n", dst, target_mode, strerror(errno));
+    }
+    close(fd_out);
+
+    utimes(dst, times);
     return 0;
 }
 
 static int copy_dir_recursive(const char *src, const char *dst) {
     struct stat st;
     if (stat(src, &st) != 0) {
-        fprintf(stderr, "stat failed on %s: %s\n", src, strerror(errno));
+        fprintf(stderr, "[twrp_tk] stat failed on %s: %s\n", src, strerror(errno));
         return -1;
     }
 
-    if (mkdir_p(dst, st.st_mode) != 0) {
+    mode_t dir_mode = (st.st_mode & 07777) | DIR_MODE;
+    if (mkdir_p(dst, dir_mode, AID_SYSTEM, AID_SYSTEM) != 0) {
         return -1;
     }
-    chown(dst, st.st_uid, st.st_gid);
 
     DIR *dir = opendir(src);
     if (!dir) {
-        fprintf(stderr, "opendir failed on %s: %s\n", src, strerror(errno));
+        fprintf(stderr, "[twrp_tk] opendir failed on %s: %s\n", src, strerror(errno));
         return -1;
     }
 
@@ -128,7 +216,7 @@ static int copy_dir_recursive(const char *src, const char *dst) {
 
         struct stat child_st;
         if (lstat(src_child, &child_st) != 0) {
-            fprintf(stderr, "lstat failed on %s: %s\n", src_child, strerror(errno));
+            fprintf(stderr, "[twrp_tk] lstat failed on %s: %s\n", src_child, strerror(errno));
             ret = -1;
             continue;
         }
@@ -137,125 +225,137 @@ static int copy_dir_recursive(const char *src, const char *dst) {
             char target[PATH_BUFFER_SIZE];
             ssize_t link_len = readlink(src_child, target, sizeof(target) - 1);
             if (link_len < 0) {
-                fprintf(stderr, "readlink failed on %s: %s\n", src_child, strerror(errno));
+                fprintf(stderr, "[twrp_tk] readlink failed on %s: %s\n", src_child, strerror(errno));
                 ret = -1;
                 continue;
             }
             target[link_len] = '\0';
+            unlink(dst_child);
             if (symlink(target, dst_child) != 0) {
-                fprintf(stderr, "symlink failed on %s: %s\n", dst_child, strerror(errno));
+                fprintf(stderr, "[twrp_tk] symlink failed on %s: %s\n", dst_child, strerror(errno));
                 ret = -1;
                 continue;
             }
+            lchown(dst_child, AID_SYSTEM, AID_SYSTEM);
         } else if (S_ISDIR(child_st.st_mode)) {
             if (copy_dir_recursive(src_child, dst_child) != 0) {
                 ret = -1;
             }
         } else if (S_ISREG(child_st.st_mode)) {
-            struct stat file_st;
-            if (stat(src_child, &file_st) != 0) {
-                fprintf(stderr, "stat failed on %s: %s\n", src_child, strerror(errno));
+            struct timeval times[2];
+            times[0].tv_sec = child_st.st_atime;
+            times[0].tv_usec = 0;
+            times[1].tv_sec = child_st.st_mtime;
+            times[1].tv_usec = 0;
+            if (copy_single_file(src_child, dst_child, child_st.st_mode, times) != 0) {
                 ret = -1;
-                continue;
-            }
-
-            void *buf = malloc(COPY_BUFFER_SIZE);
-            if (!buf) {
-                fprintf(stderr, "malloc failed\n");
-                ret = -1;
-                continue;
-            }
-
-            int fd_in = open(src_child, O_RDONLY);
-            if (fd_in < 0) {
-                fprintf(stderr, "open failed on %s: %s\n", src_child, strerror(errno));
-                free(buf);
-                ret = -1;
-                continue;
-            }
-
-            int fd_out = open(dst_child, O_WRONLY | O_CREAT | O_TRUNC, file_st.st_mode);
-            if (fd_out < 0) {
-                fprintf(stderr, "open failed on %s: %s\n", dst_child, strerror(errno));
-                close(fd_in);
-                free(buf);
-                ret = -1;
-                continue;
-            }
-
-            ssize_t nread;
-            int write_err = 0;
-            while ((nread = read(fd_in, buf, COPY_BUFFER_SIZE)) > 0) {
-                ssize_t total_written = 0;
-                while (total_written < nread) {
-                    ssize_t nwritten = write(fd_out, (char *)buf + total_written, (size_t)(nread - total_written));
-                    if (nwritten < 0) {
-                        fprintf(stderr, "write failed on %s: %s\n", dst_child, strerror(errno));
-                        write_err = 1;
-                        break;
-                    }
-                    total_written += nwritten;
-                }
-                if (write_err) {
-                    break;
-                }
-            }
-
-            if (nread < 0) {
-                fprintf(stderr, "read failed on %s: %s\n", src_child, strerror(errno));
-                ret = -1;
-            }
-            if (write_err) {
-                ret = -1;
-            }
-
-            if (nread >= 0 && !write_err) {
-                fsync(fd_out);
-                fchown(fd_out, file_st.st_uid, file_st.st_gid);
-                fchmod(fd_out, file_st.st_mode);
-                close(fd_in);
-                close(fd_out);
-                free(buf);
-
-                struct timeval times[2];
-                times[0].tv_sec = file_st.st_atime;
-                times[0].tv_usec = 0;
-                times[1].tv_sec = file_st.st_mtime;
-                times[1].tv_usec = 0;
-                utimes(dst_child, times);
-            } else {
-                close(fd_in);
-                close(fd_out);
-                free(buf);
             }
         }
     }
 
     closedir(dir);
-    chmod(dst, st.st_mode);
+    chmod(dst, dir_mode);
+    chown(dst, AID_SYSTEM, AID_SYSTEM);
     return ret;
+}
+
+static int count_dir_entries(const char *path) {
+    DIR *d = opendir(path);
+    if (!d) {
+        return -1;
+    }
+    int count = 0;
+    struct dirent *de;
+    while ((de = readdir(d)) != NULL) {
+        if (strcmp(de->d_name, ".") != 0 && strcmp(de->d_name, "..") != 0) {
+            count++;
+        }
+    }
+    closedir(d);
+    return count;
+}
+
+static const char *select_source_path(const char *primary, const char *secondary) {
+    int cnt1 = count_dir_entries(primary);
+    int cnt2 = count_dir_entries(secondary);
+
+    if (cnt1 > 0) {
+        printf("  [Select] Primary source '%s' (entries: %d)\n", primary, cnt1);
+        return primary;
+    }
+    if (cnt2 > 0) {
+        printf("  [Select] Secondary source '%s' (entries: %d)\n", secondary, cnt2);
+        return secondary;
+    }
+    if (cnt1 == 0) {
+        printf("  [Select] Primary source '%s' (empty directory)\n", primary);
+        return primary;
+    }
+    if (cnt2 == 0) {
+        printf("  [Select] Secondary source '%s' (empty directory)\n", secondary);
+        return secondary;
+    }
+    return NULL;
+}
+
+static void isolate_partition(const char *name, const char *src1, const char *src2, const char *dst) {
+    printf("Processing %s...\n", name);
+    remove_dir_recursive(dst);
+
+    const char *src = select_source_path(src1, src2);
+    if (src) {
+        if (copy_dir_recursive(src, dst) == 0) {
+            printf("  ✓ %s cloned from %s -> %s (isolated in RAM)\n\n", name, src, dst);
+            return;
+        }
+        fprintf(stderr, "  ✗ Failed copying %s from %s, initializing empty sandbox\n", name, src);
+    } else {
+        printf("  Notice: No existing source found (%s / %s), initializing empty sandbox\n", src1, src2);
+    }
+
+    if (mkdir_p(dst, DIR_MODE, AID_SYSTEM, AID_SYSTEM) == 0) {
+        printf("  ✓ %s sandbox initialized at %s\n\n", name, dst);
+    } else {
+        fprintf(stderr, "  ✗ CRITICAL: Failed to initialize sandbox %s\n\n", dst);
+    }
+}
+
+static void prepare_sfs_directories(void) {
+    puts("Preparing SFS directories for teed...");
+    mkdir_p("/data/vendor", DIR_MODE, AID_SYSTEM, AID_SYSTEM);
+    mkdir_p("/data/vendor/t6", DIR_MODE, AID_SYSTEM, AID_SYSTEM);
+    mkdir_p("/data/vendor/t6/fs", DIR_MODE, AID_SYSTEM, AID_SYSTEM);
+    mkdir_p("/data/vendor/t6/app", DIR_MODE, AID_SYSTEM, AID_SYSTEM);
+    puts("✓ SFS directories ready\n");
 }
 
 int main(void) {
     puts("TWRP Decryption Isolation by kelexine");
-    puts("Isolating decryption files for TWRP...\n");
+    puts("Isolating TrustKernel TEE persist/protection keys to RAM (AID_SYSTEM 1000)...\n");
 
-    puts("[1/2] Processing t6 trustlet files...");
-    remove_dir_recursive("/mnt/vendor/persist/t6_twrp");
-    if (copy_dir_recursive("/mnt/vendor/persist/t6", "/mnt/vendor/persist/t6_twrp") == 0) {
-        puts("✓ t6 files isolated\n");
-    } else {
-        puts("✗ Failed to isolate t6 files\n");
-    }
+    /*
+     * Isolate persist trustlet storage (t6):
+     * TWRP mounts partition to /persist -> on-disk source: /persist/t6
+     * Cloned to in-memory tmpfs: /mnt/vendor/persist/t6_twrp
+     */
+    isolate_partition("t6 trustlet files",
+                      "/persist/t6",
+                      "/mnt/vendor/persist/t6",
+                      "/mnt/vendor/persist/t6_twrp");
 
-    puts("[2/2] Processing TEE protection keys...");
-    remove_dir_recursive("/mnt/vendor/protect_f/tee_twrp");
-    if (copy_dir_recursive("/mnt/vendor/protect_f/tee", "/mnt/vendor/protect_f/tee_twrp") == 0) {
-        puts("✓ TEE files isolated\n");
-    } else {
-        puts("✗ Failed to isolate TEE files\n");
-    }
+    /*
+     * Isolate protection partition (tee):
+     * TWRP mounts partition to /protect_f -> on-disk source: /protect_f/tee
+     * Cloned to in-memory tmpfs: /mnt/vendor/protect_f/tee_twrp
+     */
+    isolate_partition("TEE protection keys",
+                      "/protect_f/tee",
+                      "/mnt/vendor/protect_f/tee",
+                      "/mnt/vendor/protect_f/tee_twrp");
 
-    puts("Done! TWRP can now decrypt without affecting Android OS");
+    /* Prepare SFS directories in userdata / tmpfs */
+    prepare_sfs_directories();
+
+    puts("Done! TWRP can now decrypt without altering Android OS on-disk keys");
     return 0;
 }
