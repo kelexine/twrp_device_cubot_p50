@@ -70,6 +70,10 @@ service teed /vendor/bin/teed \
     --rpmbdev /dev/rpmb0 \
     --prot /mnt/vendor/persist/t6_twrp \
     --prot /mnt/vendor/protect_f/tee_twrp \
+    --prot /mnt/vendor/protect_s/tee_twrp \
+    --prot /persist/t6_twrp \
+    --prot /protect_f/tee_twrp \
+    --prot /protect_s/tee_twrp \
     --logpath /data/vendor/t6/tkcore.log \
     --proprefix vendor.trustkernel
 	user root

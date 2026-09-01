@@ -236,24 +236,47 @@ static int copy_dir_recursive(const char *src, const char *dst) {
     return ret;
 }
 
+typedef struct {
+    const char *src;
+    const char *dst;
+    const char *tag;
+} IsolationTask;
+
+static const IsolationTask TASKS[] = {
+    // Existent list (preserved)
+    { "/mnt/vendor/persist/t6",    "/mnt/vendor/persist/t6_twrp",    "persist t6 (/mnt/vendor)" },
+    { "/mnt/vendor/protect_f/tee", "/mnt/vendor/protect_f/tee_twrp", "protect_f TEE (/mnt/vendor)" },
+    { "/mnt/vendor/protect_s/tee", "/mnt/vendor/protect_s/tee_twrp", "protect_s TEE (/mnt/vendor)" },
+
+    // Root-level mounts (TWRP recovery mount layout)
+    { "/persist/t6",               "/persist/t6_twrp",               "persist t6 (/persist)" },
+    { "/protect_f/tee",            "/protect_f/tee_twrp",            "protect_f TEE (/protect_f)" },
+    { "/protect_s/tee",            "/protect_s/tee_twrp",            "protect_s TEE (/protect_s)" },
+
+    // Cross-source isolation for /mnt/vendor target paths
+    { "/persist/t6",               "/mnt/vendor/persist/t6_twrp",    "persist t6 (root -> /mnt/vendor isolated)" },
+    { "/protect_f/tee",            "/mnt/vendor/protect_f/tee_twrp", "protect_f TEE (root -> /mnt/vendor isolated)" },
+    { "/protect_s/tee",            "/mnt/vendor/protect_s/tee_twrp", "protect_s TEE (root -> /mnt/vendor isolated)" },
+};
+
 int main(void) {
     puts("TWRP Decryption Isolation by kelexine");
     puts("Isolating decryption files for TWRP...\n");
 
-    puts("[1/2] Processing t6 trustlet files...");
-    remove_dir_recursive("/mnt/vendor/persist/t6_twrp");
-    if (copy_dir_recursive("/mnt/vendor/persist/t6", "/mnt/vendor/persist/t6_twrp") == 0) {
-        puts("✓ t6 files isolated\n");
-    } else {
-        puts("✗ Failed to isolate t6 files\n");
-    }
+    size_t num_tasks = sizeof(TASKS) / sizeof(TASKS[0]);
+    for (size_t i = 0; i < num_tasks; i++) {
+        struct stat st;
+        if (stat(TASKS[i].src, &st) != 0) {
+            continue;
+        }
 
-    puts("[2/2] Processing TEE protection keys...");
-    remove_dir_recursive("/mnt/vendor/protect_f/tee_twrp");
-    if (copy_dir_recursive("/mnt/vendor/protect_f/tee", "/mnt/vendor/protect_f/tee_twrp") == 0) {
-        puts("✓ TEE files isolated\n");
-    } else {
-        puts("✗ Failed to isolate TEE files\n");
+        printf("[%zu/%zu] Processing %s...\n", i + 1, num_tasks, TASKS[i].tag);
+        remove_dir_recursive(TASKS[i].dst);
+        if (copy_dir_recursive(TASKS[i].src, TASKS[i].dst) == 0) {
+            printf("✓ %s isolated -> %s\n\n", TASKS[i].tag, TASKS[i].dst);
+        } else {
+            printf("✗ Failed to isolate %s\n\n", TASKS[i].tag);
+        }
     }
 
     puts("Done! TWRP can now decrypt without affecting Android OS");
