@@ -79,15 +79,26 @@ on boot
     start health-hal-2-1
 
 on init
-    #create mountpoint for /mnt/vendor/persist partition
+    # Create mountpoints for vendor security & persist partitions
     mkdir /mnt/vendor/persist 0771 root root
+    mkdir /mnt/vendor/protect_f 0771 root root
+    mkdir /mnt/vendor/protect_s 0771 root root
+    mkdir /protect_f 0771 root root
+    mkdir /protect_s 0771 root root
+    mkdir /persist 0771 root root
 
 on post-fs
     chown root root /mnt/vendor/persist
     chmod 0771 /mnt/vendor/persist
-
-    # We restorecon /mnt/vendor/persist to set SEPolicy label.
     restorecon /mnt/vendor/persist
+
+    chown root root /mnt/vendor/protect_f
+    chmod 0771 /mnt/vendor/protect_f
+    restorecon /mnt/vendor/protect_f
+
+    chown root root /mnt/vendor/protect_s
+    chmod 0771 /mnt/vendor/protect_s
+    restorecon /mnt/vendor/protect_s
     
 on property:hwservicemanager.ready=true
     write /proc/bootprof "tkcore: start decryption services"
