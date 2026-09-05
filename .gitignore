@@ -2,3 +2,6 @@
 
 *.log
 *.txt
+
+# Compiled by twrp_tk/Android.mk — do not commit as prebuilt
+recovery/root/vendor/bin/trustkernel.twrp

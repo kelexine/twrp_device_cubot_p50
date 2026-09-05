@@ -22,13 +22,15 @@
 #include <sys/stat.h>
 #include <sys/types.h>
 #include <sys/time.h>
+#include <utime.h>
 
 #define COPY_BUFFER_SIZE 65536
 #define PATH_BUFFER_SIZE 4096
 #define CANARY_FILENAME  "out"
 
-#define DEST_PERSIST_TWRP "/mnt/vendor/persist/t6_twrp"
-#define DEST_PROTECT_TWRP "/mnt/vendor/protect_f/tee_twrp"
+#define DEST_PERSIST_TWRP   "/mnt/vendor/persist/t6_twrp"
+#define DEST_PROTECT_TWRP   "/mnt/vendor/protect_f/tee_twrp"
+#define DEST_PROTECT_S_TWRP "/mnt/vendor/protect_s/tee_twrp"
 
 static const char *const PROTECT_CANDIDATES[] = {
     "/protect_f/tee",
@@ -38,6 +40,11 @@ static const char *const PROTECT_CANDIDATES[] = {
 static const char *const PERSIST_CANDIDATES[] = {
     "/persist/t6",
     "/mnt/vendor/persist/t6"
+};
+
+static const char *const PROTECT_S_CANDIDATES[] = {
+    "/protect_s",
+    "/mnt/vendor/protect_s"
 };
 
 static void audit_log(const char *level, const char *fmt, ...) {
@@ -142,6 +149,11 @@ static int copy_file_content(int fd_in, int fd_out) {
 }
 
 static int copy_single_file(const char *src, const char *dst, mode_t mode, uid_t uid, gid_t gid) {
+    struct stat src_st;
+    if (stat(src, &src_st) != 0) {
+        return -1;
+    }
+
     int fd_in = open(src, O_RDONLY);
     if (fd_in < 0) {
         return -1;
@@ -157,9 +169,18 @@ static int copy_single_file(const char *src, const char *dst, mode_t mode, uid_t
     if (ret == 0) {
         fchown(fd_out, uid, gid);
         fchmod(fd_out, mode);
+        fsync(fd_out);
     }
     close(fd_in);
     close(fd_out);
+
+    if (ret == 0) {
+        struct utimbuf times;
+        times.actime  = src_st.st_atime;
+        times.modtime = src_st.st_mtime;
+        utime(dst, &times);
+    }
+
     return ret;
 }
 
@@ -204,6 +225,7 @@ static int copy_dir_recursive(const char *src, const char *dst) {
         }
     }
     closedir(dir);
+    chmod(dst, st.st_mode);
     return ret;
 }
 
@@ -288,8 +310,12 @@ int main(void) {
     const char *t_src = resolve_source(PERSIST_CANDIDATES, sizeof(PERSIST_CANDIDATES) / sizeof(char *),
                                        persist_src, sizeof(persist_src));
 
-    if (!p_src && !t_src) {
-        audit_log("ERR", "FATAL: Neither protect_f nor persist partitions are mounted with valid files");
+    char protect_s_src[PATH_BUFFER_SIZE];
+    const char *ps_src = resolve_source(PROTECT_S_CANDIDATES, sizeof(PROTECT_S_CANDIDATES) / sizeof(char *),
+                                        protect_s_src, sizeof(protect_s_src));
+
+    if (!p_src && !t_src && !ps_src) {
+        audit_log("ERR", "FATAL: Neither protect_f, persist, nor protect_s partitions are mounted with valid files");
         audit_log("ERR", "Ensure partitions are mounted (e.g. via mounttodecrypt=1 or TWRP mount menu)");
         return 1;
     }
@@ -313,6 +339,17 @@ int main(void) {
             audit_log("INFO", "protect_f TEE keys successfully isolated");
         } else {
             audit_log("ERR", "Failed to isolate protect_f TEE keys from %s", p_src);
+        }
+    }
+
+    if (ps_src) {
+        audit_log("INFO", "Isolating protect_s TEE keys: %s -> %s", ps_src, DEST_PROTECT_S_TWRP);
+        remove_dir_recursive(DEST_PROTECT_S_TWRP);
+        if (copy_dir_recursive(ps_src, DEST_PROTECT_S_TWRP) == 0) {
+            write_canary(DEST_PROTECT_S_TWRP);
+            audit_log("INFO", "protect_s TEE keys successfully isolated");
+        } else {
+            audit_log("ERR", "Failed to isolate protect_s TEE keys from %s", ps_src);
         }
     }
 

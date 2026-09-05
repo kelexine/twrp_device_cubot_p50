@@ -20,6 +20,13 @@ on post-fs
 	chown root root /mnt/vendor/protect_f/tee_twrp
 	restorecon /mnt/vendor/protect_f/tee_twrp
 
+	mkdir /mnt/vendor/protect_s 0771 root root
+	chown root root /mnt/vendor/protect_s
+	restorecon /mnt/vendor/protect_s
+	mkdir /mnt/vendor/protect_s/tee_twrp 0771 root root
+	chown root root /mnt/vendor/protect_s/tee_twrp
+	restorecon /mnt/vendor/protect_s/tee_twrp
+
 	# Pre-create SFS and provider directories so teed never fails on early boot
 	mkdir /data/vendor/t6 0771 root root
 	chown root root /data/vendor/t6
@@ -86,8 +93,9 @@ service teed /vendor/bin/teed \
     --systapath /vendor/app/t6 \
     --rpmbdev /dev/mmcblk0rpmb \
     --rpmbdev /dev/rpmb0 \
-    --prot /mnt/vendor/protect_f/tee_twrp \
     --prot /mnt/vendor/persist/t6_twrp \
+    --prot /mnt/vendor/protect_f/tee_twrp \
+    --prot /mnt/vendor/protect_s/tee_twrp \
     --logpath /data/vendor/t6/tkcore.log \
     --proprefix vendor.trustkernel
 	user root
