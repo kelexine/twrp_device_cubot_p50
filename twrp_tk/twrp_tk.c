@@ -1,14 +1,8 @@
 /*
  * File: twrp_tk.c
  * Author: kelexine <https://github.com/kelexine>
- * Date: 2026-09-04
  * Purpose: TWRP Decryption Isolation utility for TrustKernel TEE
- *
- * Description:
- * Probes candidate mountpoints for TrustKernel TEE keys (/protect_f/tee and /persist/t6).
- * If partitions are mounted with valid files, isolates them into RAM tmpfs to prevent
- * Android OS flash mutation during recovery decryption. If missing or unmounted,
- * fails fast with detailed audit logs to stdout, stderr, and /dev/kmsg.
+
  */
 
 #include <stdio.h>
@@ -316,7 +310,6 @@ int main(void) {
 
     if (!p_src && !t_src && !ps_src) {
         audit_log("ERR", "FATAL: Neither protect_f, persist, nor protect_s partitions are mounted with valid files");
-        audit_log("ERR", "Ensure partitions are mounted (e.g. via mounttodecrypt=1 or TWRP mount menu)");
         return 1;
     }
 

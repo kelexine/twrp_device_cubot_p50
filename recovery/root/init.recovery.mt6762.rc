@@ -15,8 +15,6 @@ on fs && property:ro.debuggable=0
     start adbd
 
 on post-fs
-    start hwservicemanager
-    start servicemanager
 
     # Fix OF installer
     symlink /dev/block/platform/bootdevice /dev/block/bootdevice
@@ -36,8 +34,6 @@ service hwservicemanager /system/bin/hwservicemanager
     disabled
     seclabel u:r:recovery:s0
 
-on post-fs
-    start vndservicemanager
 
 service vndservicemanager /system/bin/vndservicemanager /dev/vndbinder
     disabled
@@ -99,10 +95,10 @@ on post-fs
     chown root root /mnt/vendor/protect_s
     chmod 0771 /mnt/vendor/protect_s
     restorecon /mnt/vendor/protect_s
-    
-on property:hwservicemanager.ready=true
+
     write /proc/bootprof "tkcore: start decryption services"
 	start twrp_tk
+    
 
 on property:ro.crypto.state=unsupported
     stop tee_check_keybox
