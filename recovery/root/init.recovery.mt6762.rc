@@ -105,8 +105,10 @@ on post-fs
     restorecon /mnt/vendor/persist
     
 on property:hwservicemanager.ready=true
-    write /proc/bootprof "tkcore: start decryption services"
-    exec u:r:recovery:s0 root root -- /vendor/bin/trustkernel.twrp
+    write /proc/bootprof "tkcore: start TEE storage isolation"
+    start twrp_tk
+
+on property:init.svc.twrp_tk=stopped
     write /proc/bootprof "tkcore: isolation complete, starting teed"
     start teed
 

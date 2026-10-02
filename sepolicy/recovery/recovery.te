@@ -62,3 +62,13 @@ allow recovery self:netlink_kobject_uevent_socket { create setopt getopt bind re
 
 # UEventd self-permissions
 allow ueventd self:capability { sys_nice };
+
+# TrustKernel TEE chain (teed / twrp_tk / keymaster / gatekeeper all run in the
+# recovery domain): TEE driver node, RPMB block devices and exec of the
+# prebuilt vendor binaries.
+allow recovery device:chr_file { open getattr };
+allow recovery device:blk_file { open read write getattr ioctl };
+allow recovery vendor_file:file { execute execute_no_trans getattr map read open };
+allow recovery vendor_file:dir { search };
+allow recovery unlabeled:file { execute execute_no_trans getattr map read open };
+allow recovery unlabeled:dir { search };

@@ -83,16 +83,17 @@ service teed /vendor/bin/teed \
     --proprefix vendor.trustkernel
 	user root
 	group root
-	class core
 	disabled
+	oneshot
 	seclabel u:r:recovery:s0
 
-Retained as a service definition so it can also be launched by hand when debugging.
+
 service twrp_tk /vendor/bin/trustkernel.twrp
 	user root
 	group root
 	disabled
 	oneshot
+	timeout_period 30
 	seclabel u:r:recovery:s0
 
 service tee_check_keybox /vendor/bin/tee_check_keybox
