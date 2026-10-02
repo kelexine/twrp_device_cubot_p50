@@ -66,7 +66,10 @@ on property:vendor.trustkernel.log.state=ready
 	setprop vendor.trustkernel.log.state enable
 
 on property:vendor.trustkernel.ready=true
+	write /proc/bootprof "tkcore: teed ready, starting HALs"
 	start tee_check_keybox
+	start vendor.keymaster-4-0-trustkernel
+	start vendor.gatekeeper-1-0
 
 service teed /vendor/bin/teed \
     --datapath /data/vendor/t6/fs \
@@ -81,8 +84,10 @@ service teed /vendor/bin/teed \
 	user root
 	group root
 	class core
+	disabled
 	seclabel u:r:recovery:s0
 
+Retained as a service definition so it can also be launched by hand when debugging.
 service twrp_tk /vendor/bin/trustkernel.twrp
 	user root
 	group root
