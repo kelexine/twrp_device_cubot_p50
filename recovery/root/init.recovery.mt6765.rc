@@ -65,10 +65,12 @@ on fs
     mkdir /mnt/vendor/protect_s 0770 system system
     mkdir /mnt/vendor/nvdata    0771 system system
     mkdir /mnt/vendor/nvcfg     0771 system system
-    mount ext4 /dev/block/by-name/protect1 /mnt/vendor/protect_f rw wait
-    mount ext4 /dev/block/by-name/protect2 /mnt/vendor/protect_s rw wait
-    mount ext4 /dev/block/by-name/nvdata   /mnt/vendor/nvdata    rw wait
-    mount ext4 /dev/block/by-name/nvcfg    /mnt/vendor/nvcfg     rw wait
+    mkdir /mnt/vendor/persist   0771 root system
+    mount ext4 /dev/block/by-name/protect1 /mnt/vendor/protect_f rw
+    mount ext4 /dev/block/by-name/protect2 /mnt/vendor/protect_s rw
+    mount ext4 /dev/block/by-name/nvdata   /mnt/vendor/nvdata    rw
+    mount ext4 /dev/block/by-name/nvcfg    /mnt/vendor/nvcfg     rw
+    mount ext4 /dev/block/by-name/persist  /mnt/vendor/persist   rw
 
 
 service mtk.plpath.utils.link /system/bin/mtk_plpath_utils

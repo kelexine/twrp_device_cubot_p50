@@ -1,0 +1,13 @@
+# TrustKernel TEE storage paths — must match the vendor's contexts exactly
+# (pulled from /vendor/etc/selinux/vendor_file_contexts on the P50) so labels
+# written under TWRP stay valid for Android's enforcing policy.
+# NOTE: no /mnt/vendor/persist entry on purpose — the mount root keeps its
+# on-disk label and our rc never restorecons it.
+/mnt/vendor/persist/t6(/.*)?      u:object_r:tkcore_protect_data_file:s0
+/mnt/vendor/protect_f/tee(/.*)?   u:object_r:tkcore_protect_data_file:s0
+/mnt/vendor/protect_f(/.*)?       u:object_r:protect_f_data_file:s0
+/mnt/vendor/protect_s(/.*)?       u:object_r:protect_s_data_file:s0
+/data/vendor/t6/app(/.*)?         u:object_r:tkcore_spta_file:s0
+/data/vendor/t6/tkcore.log        u:object_r:tkcore_log_file:s0
+/data/vendor/t6(/.*)?             u:object_r:tkcore_data_file:s0
+/vendor/app/t6(/.*)?              u:object_r:tkcore_systa_file:s0

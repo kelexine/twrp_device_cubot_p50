@@ -135,12 +135,7 @@ jobs:
         body: |
           ## 📱 TWRP Recovery for Cubot Marlon (P50)
           
-          **Status:** Beta / Decryption (WIP)
-          
-          ### 🛠 Changelog
-          - **WORK IN PROGRESS:** Data Decryption (FBE) still in progress
-            - *Details:* Moved TrustZone Trusted Applications (TAs) to `/system` partition to prevent masking by vendor mount.
-            - *Decryption Attempt:*Attempt to fix `TEE_ERROR_ITEM_NOT_FOUND` (0xffff0007) errors.
+          **Status:** Beta / FBE Data Decryption working
           
           ### ℹ️ Build Details
           | Component | Version/Value |
@@ -149,11 +144,5 @@ jobs:
           | **Device** | `${{ github.event.inputs.DEVICE_NAME }}` |
           | **Target** | `${{ github.event.inputs.BUILD_TARGET }}.img` |
           | **Branch** | `${{ github.ref_name }}` |
-
-          > [!NOTE]
-          > Data Decryption (FBE) is still work in progress.
-          
-          > [!WARNING]
-          > TWRP might hang in Splash screen.
       env:
         GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}

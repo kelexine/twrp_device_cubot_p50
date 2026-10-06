@@ -1,15 +1,15 @@
+on early-init
+    setprop ro.keymaster.brn CUBOT
+    setprop ro.keymaster.mod P50
+
 on post-fs
 	write /proc/bootprof "tkcore: prepare system ta path"
 
-	restorecon /mnt/vendor/persist
 	mkdir /mnt/vendor/persist/t6
 	chown system system /mnt/vendor/persist/t6
-	restorecon /mnt/vendor/persist/t6
 
-	restorecon /mnt/vendor/protect_f
 	mkdir /mnt/vendor/protect_f/tee
 	chown system system /mnt/vendor/protect_f/tee
-	restorecon /mnt/vendor/protect_f/tee
 
 	mkdir /data/vendor/t6
 	chown system system /data/vendor/t6

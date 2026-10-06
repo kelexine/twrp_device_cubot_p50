@@ -9,16 +9,14 @@
 /product       ext4		/dev/block/mapper/product                   flags=display="Product";backup=0;wipeingui;
 
 # IMEI, Bluetooth, MAC Address, Serial Number & etc Partition
-/protect_f_image      emmc   /dev/block/by-name/protect1         flags=display="Protect_F [ protect1 ]";backup=1;flashimg=1
-/mnt/vendor/protect_f ext4   /dev/block/by-name/protect1         flags=display="Protect_F [ protect1 ]"
-/protect_s_image      emmc   /dev/block/by-name/protect2         flags=display="Protect_S [ protect2 ]";backup=1;flashimg=1
-/mnt/vendor/protect_s ext4   /dev/block/by-name/protect2         flags=display="Protect_S [ protect2 ]"
-/nvdata_image         emmc   /dev/block/by-name/nvdata           flags=display="Non-Volatile Data [ nvdata ]";backup=1;flashimg=1
-/mnt/vendor/nvdata    ext4   /dev/block/by-name/nvdata           flags=display="Non-Volatile Data [ nvdata ]"
-/nvcfg_image          emmc   /dev/block/by-name/nvcfg            flags=display="Non-Volatile Config [ nvcfg ]";backup=1;flashimg=1
-/mnt/vendor/nvcfg     ext4   /dev/block/by-name/nvcfg            flags=display="Non-Volatile Config [ nvcfg ]"
-/nvram                emmc   /dev/block/by-name/nvram            flags=display="Non-Volatile RAM [ nvram ]";backup=1;flashimg=1
-/proinfo              emmc   /dev/block/by-name/proinfo          flags=display="ProInfo [ proinfo ]";backup=1;flashimg=1
+/protect_f          ext4      /dev/block/platform/bootdevice/by-name/protect1                       flags=display="Protect_f";backup=1;
+/protect_s          ext4      /dev/block/platform/bootdevice/by-name/protect2                       flags=display="Protect_s";backup=1;
+/nvdata             ext4      /dev/block/platform/bootdevice/by-name/nvdata                         flags=display="Nvdata";backup=1;
+/nvcfg              ext4      /dev/block/platform/bootdevice/by-name/nvcfg                          flags=display="Nvcfg";backup=1;
+/persist            ext4      /dev/block/platform/bootdevice/by-name/persist                        flags=display="Persist";backup=1;flashimg=1;
+/persistent         emmc      /dev/block/platform/bootdevice/by-name/frp                            flags=display="Persistent";backup=1;flashimg=1;
+/nvram              emmc      /dev/block/platform/bootdevice/by-name/nvram                          flags=display="Nvram";backup=1;flashimg=1;
+/proinfo            emmc      /dev/block/platform/bootdevice/by-name/proinfo
 
 
 
@@ -41,8 +39,6 @@
 /lk2                emmc      /dev/block/by-name/bootloader2                    flags=display="Lk2";backup=1;flashimg=1;
 /tee1		        emmc      /dev/block/by-name/tee1
 /tee2		        emmc      /dev/block/by-name/tee2
-
-/super_image       emmc     /dev/block/by-name/super                           flags=display="Super (Image)";backup=1;flashimg=1;
 
 
 # AVB

@@ -1,5 +1,7 @@
 ro.boot.dynamic_partitions=true
 ro.product.first_api_level=30
+ro.keymaster.brn=CUBOT
+ro.keymaster.mod=P50
 ro.vendor.build.security_patch=2022-08-05
 ro.vendor.product.cpu.abilist=arm64-v8a,armeabi-v7a,armeabi
 ro.vendor.product.cpu.abilist32=armeabi-v7a,armeabi
