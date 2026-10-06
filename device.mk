@@ -35,8 +35,7 @@ PRODUCT_PACKAGES += \
 # Recovery packages
 PRODUCT_PACKAGES += \
     update_engine_sideload \
-    libSoftGatekeeper \
-    trustkernel.twrp
+    libSoftGatekeeper
 
 # VNDK
 PRODUCT_TARGET_VNDK_VERSION := 30

@@ -58,12 +58,17 @@ service keystore /system/bin/keystore /tmp/misc/keystore
 
 on fs
     install_keyring
+    
 
-    wait /dev/block/platform/bootdevice/by-name/persist 5
-    mount ext4 /dev/block/platform/bootdevice/by-name/persist /mnt/vendor/persist
-    wait /dev/block/platform/bootdevice/by-name/protect1 5
-    mount ext4 /dev/block/platform/bootdevice/by-name/protect1 /mnt/vendor/protect_f
-    exec u:r:recovery:s0 root root -- /vendor/bin/trustkernel.twrp
+    mkdir /mnt/vendor           0755 system system
+    mkdir /mnt/vendor/protect_f 0770 system system
+    mkdir /mnt/vendor/protect_s 0770 system system
+    mkdir /mnt/vendor/nvdata    0771 system system
+    mkdir /mnt/vendor/nvcfg     0771 system system
+    mount ext4 /dev/block/by-name/protect1 /mnt/vendor/protect_f rw wait
+    mount ext4 /dev/block/by-name/protect2 /mnt/vendor/protect_s rw wait
+    mount ext4 /dev/block/by-name/nvdata   /mnt/vendor/nvdata    rw wait
+    mount ext4 /dev/block/by-name/nvcfg    /mnt/vendor/nvcfg     rw wait
 
 
 service mtk.plpath.utils.link /system/bin/mtk_plpath_utils

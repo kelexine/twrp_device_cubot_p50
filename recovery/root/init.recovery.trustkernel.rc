@@ -1,8 +1,15 @@
 on post-fs
 	write /proc/bootprof "tkcore: prepare system ta path"
 
-	restorecon /persist/t6_twrp
-	restorecon /protect_f/tee_twrp
+	restorecon /mnt/vendor/persist
+	mkdir /mnt/vendor/persist/t6
+	chown system system /mnt/vendor/persist/t6
+	restorecon /mnt/vendor/persist/t6
+
+	restorecon /mnt/vendor/protect_f
+	mkdir /mnt/vendor/protect_f/tee
+	chown system system /mnt/vendor/protect_f/tee
+	restorecon /mnt/vendor/protect_f/tee
 
 	start teed
 
@@ -52,8 +59,8 @@ service teed /vendor/bin/teed \
     --systapath /vendor/app/t6 \
     --rpmbdev /dev/mmcblk0rpmb \
     --rpmbdev /dev/rpmb0 \
-    --prot /mnt/vendor/persist/t6_twrp \
-    --prot /mnt/vendor/protect_f/tee_twrp \
+    --prot /mnt/vendor/persist/t6 \
+    --prot /mnt/vendor/protect_f/tee \
     --logpath /data/vendor/t6/tkcore.log \
     --proprefix vendor.trustkernel
 	capabilities SYS_RAWIO
@@ -68,5 +75,4 @@ service tee_check_keybox /vendor/bin/tee_check_keybox
        class main
        disabled
        oneshot
-       seclabel u:r:recovery:s0
-	   
+	   seclabel u:r:recovery:s0
