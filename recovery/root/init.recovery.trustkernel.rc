@@ -1,3 +1,7 @@
+on early-init
+    setprop ro.keymaster.brn CUBOT
+    setprop ro.keymaster.mod P50
+
 on post-fs
 	write /proc/bootprof "tkcore: prepare system ta path"
 
