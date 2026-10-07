@@ -5,15 +5,18 @@ on early-init
 on post-fs
 	write /proc/bootprof "tkcore: prepare system ta path"
 
-	restorecon /mnt/vendor/persist
+	# No restorecon on /mnt/vendor/persist or /mnt/vendor/protect_f: with
+	# TWRP's policy the vendor types used to be unmappable, so restorecon
+	# relabeled the real TEE storage on disk (persist_data_file etc. became
+	# mnt_vendor_file, files teed created became unlabeled) and Android's
+	# gatekeeper then rejected the FBE password after reboot. The types are
+	# now defined in sepolicy/recovery/tkcore.te, so files teed creates
+	# inherit the correct on-disk label for Android without any relabeling.
 	mkdir /mnt/vendor/persist/t6
 	chown system system /mnt/vendor/persist/t6
-	restorecon /mnt/vendor/persist/t6
 
-	restorecon /mnt/vendor/protect_f
 	mkdir /mnt/vendor/protect_f/tee
 	chown system system /mnt/vendor/protect_f/tee
-	restorecon /mnt/vendor/protect_f/tee
 
 	mkdir /data/vendor/t6
 	chown system system /data/vendor/t6

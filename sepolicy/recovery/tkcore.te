@@ -1,0 +1,32 @@
+# TrustKernel / MTK vendor file types.
+#
+# These labels live in the ext4 xattrs of /mnt/vendor/persist and
+# /mnt/vendor/protect_f (written by Android's vendor policy). TWRP must be
+# able to map them: otherwise restorecon relabels the real TEE storage to
+# mnt_vendor_file and files created by teed land as unlabeled, after which
+# Android's enforcing teed/gatekeeper can no longer read their own store and
+# the FBE password is rejected ("wrong password") until persist/protect are
+# restored from backup. Seen 2026-10-07.
+#
+# persist_data_file is deliberately NOT declared here (already in plat
+# policy); /mnt/vendor/persist itself is never restorecon'd by our rc.
+
+type protect_f_data_file, file_type;
+type protect_s_data_file, file_type;
+type tkcore_protect_data_file, file_type;
+type tkcore_data_file, file_type;
+type tkcore_spta_file, file_type;
+type tkcore_systa_file, file_type;
+type tkcore_log_file, file_type;
+
+# teed / tee_check_keybox / keymaster+gatekeeper HALs all run as recovery
+allow recovery { protect_f_data_file protect_s_data_file tkcore_protect_data_file }:dir
+    { add_name create getattr open read remove_name rename reparent rmdir search setattr write };
+allow recovery { protect_f_data_file protect_s_data_file tkcore_protect_data_file }:file
+    { append create getattr ioctl link map open read rename setattr unlink write };
+allow recovery { tkcore_data_file tkcore_spta_file tkcore_log_file }:dir
+    { add_name create getattr open read remove_name rename reparent rmdir search setattr write };
+allow recovery { tkcore_data_file tkcore_spta_file tkcore_log_file }:file
+    { append create getattr ioctl link map open read rename setattr unlink write };
+allow recovery tkcore_systa_file:dir { getattr open read search };
+allow recovery tkcore_systa_file:file { getattr map open read };
