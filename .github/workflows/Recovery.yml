@@ -135,12 +135,13 @@ jobs:
         body: |
           ## 📱 TWRP Recovery for Cubot Marlon (P50)
           
-          **Status:** Beta / Decryption (WIP)
+          **Status:** Beta / FBE Data Decryption working
           
           ### 🛠 Changelog
-          - **WORK IN PROGRESS:** Data Decryption (FBE) still in progress
-            - *Details:* Moved TrustZone Trusted Applications (TAs) to `/system` partition to prevent masking by vendor mount.
-            - *Decryption Attempt:*Attempt to fix `TEE_ERROR_ITEM_NOT_FOUND` (0xffff0007) errors.
+          - **Data Decryption (FBE) now works:**
+            - *teed userinit fix:* `ro.keymaster.brn` / `ro.keymaster.mod` are set at early-init, so teed's userinit thread no longer blocks forever waiting for them (previously stalled the whole TEE: no TA ever loaded).
+            - *TrustKernel provisioning:* `/mnt/vendor/persist` is now mounted at `on fs`, so the TEE can read its real provisioning data (`--prot /mnt/vendor/persist/t6`) — fixes gatekeeper verify and CE key unlock.
+            - *Splash hang fixed:* the keymaster → keystore2 chain comes up at boot, so TWRP no longer blocks during metadata-key retrieval.
           
           ### ℹ️ Build Details
           | Component | Version/Value |
@@ -151,9 +152,6 @@ jobs:
           | **Branch** | `${{ github.ref_name }}` |
 
           > [!NOTE]
-          > Data Decryption (FBE) is still work in progress.
-          
-          > [!WARNING]
-          > TWRP might hang in Splash screen.
+          > Data Decryption (FBE) works out of the box — no manual `teed` restart needed.
       env:
         GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}

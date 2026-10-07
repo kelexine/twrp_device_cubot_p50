@@ -27,7 +27,7 @@ Medium checks
 - [X] all important partitions listed in mount/backup lists
 - [X] backup/restore to/from external (USB-OTG) storage (mouse and keyboard works)
 - [X] backup/restore to/from adb (https://gerrit.omnirom.org/#/c/15943/)
-- [ ] decrypt /data
+- [X] decrypt /data (FBE, TrustKernel TEE — fixed 2026-10: teed userinit props + persist mount)
 - [X] Correct date
 
 Minor checks
